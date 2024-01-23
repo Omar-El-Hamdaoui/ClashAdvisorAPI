@@ -10,6 +10,7 @@ public class Movie {
         this.note=note;
         this.kind=kind;
     }
-
+    public String getName() {return name;}
+    public int getDateOfRelease() {return dateOfRelease;}
 
 }
