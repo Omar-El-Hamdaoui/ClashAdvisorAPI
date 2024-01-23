@@ -12,5 +12,7 @@ public class Movie {
     }
     public String getName() {return name;}
     public int getDateOfRelease() {return dateOfRelease;}
+    public int getNote(){return note;}
+    public String getKind(){return kind;}
 
 }
