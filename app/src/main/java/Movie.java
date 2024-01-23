@@ -14,5 +14,8 @@ public class Movie {
     public int getDateOfRelease() {return dateOfRelease;}
     public int getNote(){return note;}
     public String getKind(){return kind;}
+    public void setNote(int Note){
+        this.note=note;
+    }
 
 }
