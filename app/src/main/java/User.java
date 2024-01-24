@@ -21,4 +21,8 @@ public class User {
         if(favorites.contains(movie)){}
         else favorites.add(movie);
     }
+    public void deleteMovie(Movie movie){
+        if(!favorites.contains(movie)){}
+        else favorites.remove(movie);
+    }
 }
