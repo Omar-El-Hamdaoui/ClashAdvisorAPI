@@ -17,5 +17,7 @@ public class Movie {
     public void setNote(int Note){
         this.note=note;
     }
-
+    public String toString(){
+        return name+"\n"+"Kind: "+kind+"\n"+"Date of release: "+dateOfRelease+"\n"+"Note :"+note;
+    }
 }

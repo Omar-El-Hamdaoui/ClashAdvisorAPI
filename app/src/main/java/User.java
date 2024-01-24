@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class User {
     private final int id;
     private final String name;
@@ -13,5 +16,6 @@ public class User {
     public int getId(){
         return id;
     }
+
 
 }
