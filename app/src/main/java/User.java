@@ -25,4 +25,8 @@ public class User {
         if(!favorites.contains(movie)){}
         else favorites.remove(movie);
     }
+    public List<Movie> getFavorites(){return favorites;}
+    public List<String> getFavoriteNames(){
+        return favorites.stream().map(Movie::getName).toList();
+    }
 }
