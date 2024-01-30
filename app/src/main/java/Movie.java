@@ -1,6 +1,6 @@
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.Arrays;
+import java.util.*;
 
 public class Movie {
     private boolean adult;
