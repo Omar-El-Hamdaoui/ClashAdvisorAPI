@@ -142,7 +142,7 @@ public class Movie {
     public String toString() {
         return "Movie{" +
                 "adult=" + adult +
-                ", backdropPath='" + backdropPath + '\'' +
+                ", backdropPath='" + backdropPath + '\''  +
                 ", genreIds=" + Arrays.toString(genreIds) +
                 ", id=" + id +
                 ", originalLanguage='" + originalLanguage + '\'' +
