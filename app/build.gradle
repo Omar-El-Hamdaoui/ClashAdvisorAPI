@@ -41,7 +41,8 @@ javafx {
 
 application {
     // Define the main class for the application.
-    mainClass = 'moviesapp.App'
+    //mainClass = 'moviesapp.App'
+    mainClass = 'moviesapp.AppCLI'
 }
 
 tasks.named('test') {
