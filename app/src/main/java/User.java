@@ -27,6 +27,6 @@ public class User {
     }
     public List<Movie> getFavorites(){return favorites;}
     public List<String> getFavoriteNames(){
-        return favorites.stream().map(Movie::getName).toList();
+        return favorites.stream().map(Movie::getTitle).toList();
     }
 }
