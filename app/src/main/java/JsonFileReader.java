@@ -26,11 +26,11 @@ public class JsonFileReader {
             // Accédez aux résultats individuels
             JsonNode resultsNode = jsonNode.get("results");
             for (JsonNode result : resultsNode) {
-                String title = result.get("title").asText();
-                double popularity = result.get("popularity").asDouble();
+                Movie movie = objectMapper.treeToValue(result, Movie.class);
 
-                System.out.println("Title: " + title);
-                System.out.println("Popularity: " + popularity);
+                // Utilisez maintenant l'objet Movie
+                System.out.println("Title: " + movie.getTitle());
+                System.out.println("Popularity: " + movie.getPopularity());
                 System.out.println("---");
             }
         } catch (IOException e) {
@@ -38,4 +38,3 @@ public class JsonFileReader {
         }
     }
 }
-
