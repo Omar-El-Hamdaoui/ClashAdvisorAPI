@@ -7,13 +7,12 @@ import java.io.IOException;
 public class JsonFileReader {
     public static void main(String[] args) {
         // Remplacez "chemin/vers/votre/fichier.json" par le chemin réel de votre fichier
-        String filePath = "chemin/vers/votre/fichier.json";
+        String filePath = "app/src/main/java/text.json";
 
         try {
             // Créez un objet ObjectMapper
             ObjectMapper objectMapper = new ObjectMapper();
 
-            // Utilisez l'objet ObjectMapper pour lire le fichier JSON et créer un nœud JSON
             JsonNode jsonNode = objectMapper.readTree(new File(filePath));
 
             // Accédez aux données spécifiques à partir du nœud JSON
