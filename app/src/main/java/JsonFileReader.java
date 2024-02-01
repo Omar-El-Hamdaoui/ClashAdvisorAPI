@@ -6,7 +6,7 @@ import java.io.IOException;
 
 public class JsonFileReader {
     public static void main(String[] args) {
-        // Remplacez "chemin/vers/votre/fichier.json" par le chemin réel de votre fichier
+
         String filePath = "app/src/main/java/text.json";
 
         try {
@@ -28,9 +28,9 @@ public class JsonFileReader {
                 Movie movie = objectMapper.treeToValue(result, Movie.class);
 
                 // Utilisez maintenant l'objet Movie
-                System.out.println("Title: " + movie.getTitle());
-                System.out.println("Popularity: " + movie.getPopularity());
-                System.out.println("---");
+                System.out.println(movie);
+
+                System.out.println("-----------------------");
             }
         } catch (IOException e) {
             e.printStackTrace();
