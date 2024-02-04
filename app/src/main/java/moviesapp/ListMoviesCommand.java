@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import picocli.CommandLine;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +39,8 @@ public class ListMoviesCommand implements Runnable {
 
     @CommandLine.Option(names = {"--releaseDateBefore"}, description = "Search for movies released before a certain date")
     private String releaseDateBefore;
+    @CommandLine.Option(names = {"--outputFile"}, description = "Specify the output file for results")
+    private String outputFile;
 
     @Override
     public void run() {
@@ -57,8 +60,28 @@ public class ListMoviesCommand implements Runnable {
                         && (releaseDateBefore == null || movie.getReleaseDate().compareTo(releaseDateBefore) <= 0))
                 .collect(Collectors.toList());
 
-        // Print the filtered movies
-        for (Movie movie : filteredMovies) {
+        // Print the filtered movies or save to a file
+        if (outputFile != null) {
+            saveResultsToFile(filteredMovies, outputFile);
+        } else {
+            printResultsToConsole(filteredMovies);
+        }
+    }
+
+    private void saveResultsToFile(List<Movie> movies, String fileName) {
+        try (FileWriter writer = new FileWriter(fileName)) {
+            for (Movie movie : movies) {
+                writer.write(movie.toString());
+                writer.write(System.lineSeparator());
+            }
+            System.out.println("Results saved to: " + fileName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void printResultsToConsole(List<Movie> movies) {
+        for (Movie movie : movies) {
             System.out.println(movie);
         }
     }
