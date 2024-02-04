@@ -1,13 +1,17 @@
+package moviesapp;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.*;
 
 public class JsonFileReader {
+    private static final String filePath = "app/src/text.json";
+    public static List<Movie> thisIsAllMovies = new ArrayList<>();
     public static void main(String[] args) {
 
-        String filePath = "app/src/main/java/text.json";
 
         try {
             // Créez un objet ObjectMapper
@@ -26,14 +30,22 @@ public class JsonFileReader {
             JsonNode resultsNode = jsonNode.get("results");
             for (JsonNode result : resultsNode) {
                 Movie movie = objectMapper.treeToValue(result, Movie.class);
+                thisIsAllMovies.add(movie);
 
-                // Utilisez maintenant l'objet Movie
+                // Utilisez maintenant l'objet moviesapp.Movie
+                /**System.out.println(movie);
+
+                System.out.println("-----------------------");*/
+            }
+            for(Movie movie :thisIsAllMovies){
                 System.out.println(movie);
-
-                System.out.println("-----------------------");
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static String getFilePath(){
+        return filePath;
     }
 }

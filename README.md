@@ -12,5 +12,7 @@ Team 2
 - EL HAMDAOUI Omar
 - EL DERSHABY Mohamed
 
+Liste des Commandes
+tous les liste:./gradlew run --args="list"
 
 
