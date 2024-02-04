@@ -1,3 +1,5 @@
+package moviesapp;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.*;
@@ -140,22 +142,22 @@ public class Movie {
 
     @Override
     public String toString() {
-        return "Movie{" +
+        return "The movie Is{" +
                 "adult=" + adult +
-                ", backdropPath='" + backdropPath + '\''  +
-                ", genreIds=" + Arrays.toString(genreIds) +
-                ", id=" + id +
-                ", originalLanguage='" + originalLanguage + '\'' +
-                ", originalTitle='" + originalTitle + '\'' +
-                ", overview='" + overview + '\'' +
-                ", popularity=" + popularity +
-                ", posterPath='" + posterPath + '\'' +
-                ", releaseDate='" + releaseDate + '\'' +
-                ", title='" + title + '\'' +
-                ", video=" + video +
-                ", voteAverage=" + voteAverage +
-                ", voteCount=" + voteCount +
-                '}';
+                ","+ "backdropPath='" + backdropPath + '\''  +
+                ", "+"genreIds=" + Arrays.toString(genreIds) +
+                ", "+"id=" + id +
+                ", "+"originalLanguage='" + originalLanguage + '\'' +
+                ", "+"originalTitle='" + originalTitle + '\'' +
+                ", "+"overview='" + overview + '\'' +
+                ", "+"popularity=" + popularity +
+                ", "+"posterPath='" + posterPath + '\'' +
+                ", "+"releaseDate='" + releaseDate + '\'' +
+                ", "+"title='" + title + '\'' +
+                ", "+"video=" + video +
+                ", "+"voteAverage=" + voteAverage +
+                ", "+"\n"+"voteCount=" + voteCount +
+                '}'+"\n"+"-------------------------------------------------------------------------";
     }
 }
 

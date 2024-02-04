@@ -30,6 +30,9 @@ dependencies {
     // This dependency is used by Json
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.5'
 
+    // This dependency is used for the commands
+    implementation 'info.picocli:picocli:4.6.1'
+
 
 }
 
@@ -41,7 +44,8 @@ javafx {
 
 application {
     // Define the main class for the application.
-    mainClass = 'moviesapp.App'
+    //mainClass = 'moviesapp.App'
+    mainClass = 'moviesapp.AppCLI'
 }
 
 tasks.named('test') {
