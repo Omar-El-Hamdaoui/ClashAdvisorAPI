@@ -30,7 +30,7 @@ public class AppCLI {
         CommandLine commandLine = new CommandLine(appCLI);
 
         // Ajoutez la sous-commande "list" avec l'instance de ListMoviesCommand
-        commandLine.addSubcommand("list", listMoviesCommand);
+        commandLine.addSubcommand("AllMovies", listMoviesCommand);
 
         // Exécutez l'application avec les arguments
         commandLine.execute(args);

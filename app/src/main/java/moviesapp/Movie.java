@@ -142,22 +142,22 @@ public class Movie {
 
     @Override
     public String toString() {
-        return "moviesapp.Movie{" +
+        return "The movie Is{" +
                 "adult=" + adult +
-                ","+"\n" +"backdropPath='" + backdropPath + '\''  +
-                ", "+"\n"+"genreIds=" + Arrays.toString(genreIds) +
-                ", "+"\n"+"id=" + id +
-                ", "+"\n"+"originalLanguage='" + originalLanguage + '\'' +
-                ", "+"\n"+"originalTitle='" + originalTitle + '\'' +
-                ", "+"\n"+"overview='" + overview + '\'' +
-                ", "+"\n"+"popularity=" + popularity +
-                ", "+"\n"+"posterPath='" + posterPath + '\'' +
-                ", "+"\n"+"releaseDate='" + releaseDate + '\'' +
-                ", "+"\n"+"title='" + title + '\'' +
-                ", "+"\n"+"video=" + video +
-                ", "+"\n"+"voteAverage=" + voteAverage +
+                ","+ "backdropPath='" + backdropPath + '\''  +
+                ", "+"genreIds=" + Arrays.toString(genreIds) +
+                ", "+"id=" + id +
+                ", "+"originalLanguage='" + originalLanguage + '\'' +
+                ", "+"originalTitle='" + originalTitle + '\'' +
+                ", "+"overview='" + overview + '\'' +
+                ", "+"popularity=" + popularity +
+                ", "+"posterPath='" + posterPath + '\'' +
+                ", "+"releaseDate='" + releaseDate + '\'' +
+                ", "+"title='" + title + '\'' +
+                ", "+"video=" + video +
+                ", "+"voteAverage=" + voteAverage +
                 ", "+"\n"+"voteCount=" + voteCount +
-                '}';
+                '}'+"\n"+"-------------------------------------------------------------------------";
     }
 }
 

@@ -13,6 +13,8 @@ Team 2
 - EL DERSHABY Mohamed
 
 Liste des Commandes
-tous les liste:./gradlew run --args="list"
+
+Pour voir tous les commandes :./gradlew run --args="AllMovies --help"
+Tous les liste :./gradlew run --args="list"
 
 
