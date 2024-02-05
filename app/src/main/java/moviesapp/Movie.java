@@ -156,7 +156,7 @@ public class Movie {
                 ", "+"title='" + title + '\'' +
                 ", "+"video=" + video +
                 ", "+"voteAverage=" + voteAverage +
-                ", "+"\n"+"voteCount=" + voteCount +
+                ", "+"voteCount=" + voteCount +
                 '}'+"\n"+"-------------------------------------------------------------------------";
     }
 }

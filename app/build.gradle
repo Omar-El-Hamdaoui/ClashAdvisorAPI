@@ -34,6 +34,9 @@ dependencies {
     implementation 'info.picocli:picocli:4.6.1'
 
 
+    //this 2 dependecies are for javafx
+    implementation 'org.openjfx:javafx-controls:16'
+    implementation 'org.openjfx:javafx-fxml:16'
 }
 
 
@@ -44,8 +47,8 @@ javafx {
 
 application {
     // Define the main class for the application.
-    //mainClass = 'moviesapp.App'
-    mainClass = 'moviesapp.AppCLI'
+    mainClass = 'moviesapp.App'
+    //mainClass = 'moviesapp.AppCLI'
 }
 
 tasks.named('test') {
