@@ -142,22 +142,21 @@ public class Movie {
 
     @Override
     public String toString() {
-        return "The movie Is{" +
-                "adult=" + adult +
-                ","+ "backdropPath='" + backdropPath + '\''  +
-                ", "+"genreIds=" + Arrays.toString(genreIds) +
-                ", "+"id=" + id +
-                ", "+"originalLanguage='" + originalLanguage + '\'' +
-                ", "+"originalTitle='" + originalTitle + '\'' +
-                ", "+"overview='" + overview + '\'' +
-                ", "+"popularity=" + popularity +
-                ", "+"posterPath='" + posterPath + '\'' +
-                ", "+"releaseDate='" + releaseDate + '\'' +
-                ", "+"title='" + title + '\'' +
-                ", "+"video=" + video +
-                ", "+"voteAverage=" + voteAverage +
-                ", "+"\n"+"voteCount=" + voteCount +
-                '}'+"\n"+"-------------------------------------------------------------------------";
+        return "The movie Is '"+ title +"',"+ '\n'+
+                "Adult: " + adult + ","+'\n'+
+                "Backdrop Path: '" + backdropPath + "',"+'\n'+
+                "Genre Ids=" + Arrays.toString(genreIds) + ","+'\n'+
+                "Id: " + id + ","+'\n'+
+                "Original Language: '" + originalLanguage + "',"+'\n'+
+                "Original Title: '" + originalTitle + "',"+'\n'+
+                "Overview: '" + overview + "',"+'\n'+
+                "Popularity: " + popularity + ","+'\n'+
+                "Poster Path: '" + posterPath + "',"+'\n'+
+                "Release Date: '" + releaseDate + "',"+'\n'+
+                "Video: " + video + ","+'\n'+
+                "Vote Average: " + voteAverage + ","+'\n'+
+                "Vote Count: " + voteCount +'\n'+
+                "-------------------------------------------------------------------------";
     }
 }
 
