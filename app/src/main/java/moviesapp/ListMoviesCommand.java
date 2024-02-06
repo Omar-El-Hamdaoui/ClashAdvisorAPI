@@ -41,6 +41,8 @@ public class ListMoviesCommand implements Runnable {
     private String releaseDateBefore;
     @CommandLine.Option(names = {"--outputFile"}, description = "Specify the output file for results")
     private String outputFile;
+    @CommandLine.Option(names = {"--allDetails"}, description = "Return all the details of the Movie")
+    private String allDetails;
 
     @Override
     public void run() {
@@ -62,11 +64,14 @@ public class ListMoviesCommand implements Runnable {
 
         // Print the filtered movies or save to a file
         if (outputFile != null) {
-            saveResultsToFile(filteredMovies, outputFile);
-        } else {
-            printResultsToConsole(filteredMovies);
+            saveResultsToFile(filteredMovies, outputFile);}
+       else if (allDetails !=null) {
+                printResultsToConsole(filteredMovies);
+            } else {
+                printResultsTitles(filteredMovies);
+            }
         }
-    }
+
 
     private void saveResultsToFile(List<Movie> movies, String fileName) {
         try (FileWriter writer = new FileWriter(fileName)) {
@@ -83,6 +88,11 @@ public class ListMoviesCommand implements Runnable {
     private void printResultsToConsole(List<Movie> movies) {
         for (Movie movie : movies) {
             System.out.println(movie);
+        }
+    }
+    private void printResultsTitles(List<Movie> movies){
+        for(Movie movie :movies){
+            System.out.println(movie.getTitle());
         }
     }
 
