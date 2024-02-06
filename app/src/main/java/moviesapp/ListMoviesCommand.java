@@ -97,7 +97,7 @@ public class ListMoviesCommand implements Runnable {
         return false;
     }
 
-    public List<Movie> getAllTheMovies() {
+    public static List<Movie> getAllTheMovies() {
         List<Movie> allTheMovies = new ArrayList<>();
         try {
             ObjectMapper objectMapper = new ObjectMapper();

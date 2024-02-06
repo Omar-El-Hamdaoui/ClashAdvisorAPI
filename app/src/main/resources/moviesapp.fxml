@@ -1,14 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="moviesapp.controller.AppController"
-            prefHeight="400.0" prefWidth="600.0">
-
-</AnchorPane>
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="moviesapp.controller.AppController" prefHeight="600.0" prefWidth="800.0">
+    <left>
+        <VBox spacing="10" style="-fx-padding: 10;" BorderPane.alignment="CENTER">
+            <Label text="FILTERS:"/>
+            <HBox spacing="5" alignment="CENTER_LEFT">
+                <Label text="name:"/>
+                <TextField fx:id="nameField" prefWidth="150"/>
+            </HBox>
+            <HBox spacing="5" alignment="CENTER_LEFT">
+                <Label text="years:"/>
+                <TextField fx:id="fromYearField" prefWidth="70" promptText="from"/>
+                <Label text="to"/>
+                <TextField fx:id="toYearField" prefWidth="70" promptText="to"/>
+            </HBox>
+            <HBox spacing="5" alignment="CENTER_LEFT">
+                <Label text="genre:"/>
+                <ComboBox fx:id="genreComboBox" prefWidth="150"/>
+            </HBox>
+            <HBox spacing="5" alignment="CENTER_LEFT">
+                <Label text="rating:"/>
+                <TextField fx:id="ratingField" prefWidth="50" promptText="at least"/>
+            </HBox>
+            <Button fx:id="searchButton" text="GO" maxWidth="Infinity" onAction="#handleSearchButtonAction"/>
+            <Button fx:id="favoritesButton" text="Favourites" maxWidth="Infinity" onAction="#handleFavoritesButtonAction"/>
+        </VBox>
+    </left>
+    <center>
+        <ListView fx:id="moviesListView" BorderPane.alignment="CENTER"/>
+    </center>
+</BorderPane>

@@ -1,13 +1,7 @@
 package moviesapp;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
-
-import java.io.File;
-import java.io.IOException;
-
 
 
 @Command(name = "appcli", mixinStandardHelpOptions = true, version = "1.0")
