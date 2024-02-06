@@ -32,10 +32,6 @@
                     Movie movie = objectMapper.treeToValue(result, Movie.class);
                     thisIsAllMovies.add(movie);
 
-                    // Utilisez maintenant l'objet moviesapp.Movie
-                    /**System.out.println(movie);
-
-                    System.out.println("-----------------------");*/
                 }
                 for(Movie movie :thisIsAllMovies){
                     System.out.println(movie);
