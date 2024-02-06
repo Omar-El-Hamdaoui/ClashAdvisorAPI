@@ -1,3 +1,5 @@
+package moviesapp;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.*;
@@ -140,7 +142,7 @@ public class Movie {
 
     @Override
     public String toString() {
-        return "Movie{" +
+        return "moviesapp.Movie{" +
                 "adult=" + adult +
                 ", backdropPath='" + backdropPath + '\''  +
                 ", genreIds=" + Arrays.toString(genreIds) +
