@@ -1,3 +1,5 @@
+package moviesapp;
+
 import moviesapp.Movie;
 
 import java.util.ArrayList;
@@ -9,7 +11,7 @@ public class User {
     private static int counter=0;
     private List<Movie> favorites = new ArrayList<>();
 
-    public User(int id, String name) {
+    public User(String name) {
         this.id = ++counter;
         this.name = name;
     }
