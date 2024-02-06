@@ -1,3 +1,5 @@
+package moviesapp;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -27,7 +29,7 @@ public class JsonFileReader {
             for (JsonNode result : resultsNode) {
                 Movie movie = objectMapper.treeToValue(result, Movie.class);
 
-                // Utilisez maintenant l'objet Movie
+                // Utilisez maintenant l'objet moviesapp.Movie
                 System.out.println("Title: " + movie.getTitle());
                 System.out.println("Popularity: " + movie.getPopularity());
                 System.out.println("---");
