@@ -1,41 +1,51 @@
-package moviesapp;
+    package moviesapp;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+    import com.fasterxml.jackson.databind.JsonNode;
+    import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.File;
-import java.io.IOException;
+    import java.io.File;
+    import java.io.IOException;
+    import java.util.*;
 
-public class JsonFileReader {
-    public static void main(String[] args) {
-        // Remplacez "chemin/vers/votre/fichier.json" par le chemin réel de votre fichier
-        String filePath = "app/src/main/java/text.json";
+    public class JsonFileReader {
+        private static final String filePath = "app/src/text.json";
+        public static List<Movie> thisIsAllMovies = new ArrayList<>();
+        public static void main(String[] args) {
 
-        try {
-            // Créez un objet ObjectMapper
-            ObjectMapper objectMapper = new ObjectMapper();
 
-            JsonNode jsonNode = objectMapper.readTree(new File(filePath));
+            try {
+                // Créez un objet ObjectMapper
+                ObjectMapper objectMapper = new ObjectMapper();
 
-            // Accédez aux données spécifiques à partir du nœud JSON
-            int page = jsonNode.get("page").asInt();
-            int totalResults = jsonNode.get("total_results").asInt();
+                JsonNode jsonNode = objectMapper.readTree(new File(filePath));
 
-            System.out.println("Page: " + page);
-            System.out.println("Total Results: " + totalResults);
+                // Accédez aux données spécifiques à partir du nœud JSON
+                int page = jsonNode.get("page").asInt();
+                int totalResults = jsonNode.get("total_results").asInt();
 
-            // Accédez aux résultats individuels
-            JsonNode resultsNode = jsonNode.get("results");
-            for (JsonNode result : resultsNode) {
-                Movie movie = objectMapper.treeToValue(result, Movie.class);
+                System.out.println("Page: " + page);
+                System.out.println("Total Results: " + totalResults);
 
-                // Utilisez maintenant l'objet moviesapp.Movie
-                System.out.println("Title: " + movie.getTitle());
-                System.out.println("Popularity: " + movie.getPopularity());
-                System.out.println("---");
+                // Accédez aux résultats individuels
+                JsonNode resultsNode = jsonNode.get("results");
+                for (JsonNode result : resultsNode) {
+                    Movie movie = objectMapper.treeToValue(result, Movie.class);
+                    thisIsAllMovies.add(movie);
+
+                    // Utilisez maintenant l'objet moviesapp.Movie
+                    /**System.out.println(movie);
+
+                    System.out.println("-----------------------");*/
+                }
+                for(Movie movie :thisIsAllMovies){
+                    System.out.println(movie);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        }
+
+        public static String getFilePath(){
+            return filePath;
         }
     }
-}

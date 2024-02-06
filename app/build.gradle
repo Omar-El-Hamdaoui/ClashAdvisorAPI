@@ -10,7 +10,7 @@ plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
     id 'java'
-    id 'org.openjfx.javafxplugin' version '0.1.0'
+    id 'org.openjfx.javafxplugin' version '0.0.10'
 
 }
 
@@ -30,18 +30,25 @@ dependencies {
     // This dependency is used by Json
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.5'
 
+    // This dependency is used for the commands
+    implementation 'info.picocli:picocli:4.6.1'
 
+
+    //this 2 dependecies are for javafx
+    implementation 'org.openjfx:javafx-controls:16'
+    implementation 'org.openjfx:javafx-fxml:16'
 }
 
 
 javafx {
-    version = "21.0.1"
-    modules = ['javafx.controls', 'javafx.fxml', 'javafx.web']
+    version = "16"
+    modules = ['javafx.controls', 'javafx.fxml']
 }
 
 application {
     // Define the main class for the application.
-    mainClass = 'moviesapp.App'
+    //mainClass = 'moviesapp.App'
+    mainClass = 'moviesapp.AppCLI'
 }
 
 tasks.named('test') {
