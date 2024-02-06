@@ -11,7 +11,7 @@ public class User {
 
     public User(String name) {
         this.id = ++counter;
-        this.name = name;
+        this.name = name ;
     }
     public String getName(){
         return name;
