@@ -23,12 +23,6 @@ public class ListMoviesCommand implements Runnable {
         // Initialize your CLI application components
         ListMoviesCommand appCLI = new ListMoviesCommand();
 
-        // Simple user management simulation
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Enter your username:");
-        String username = scanner.nextLine().trim();
-        User user = new User(username); // Simplified: Creating a new user for each session
-        appCLI.setCurrentUser(user); // Set the current user in the CLI application
 
         // Proceed with the application logic
         appCLI.run();
