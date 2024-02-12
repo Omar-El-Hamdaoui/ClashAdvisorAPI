@@ -229,12 +229,6 @@ public class AppController implements Initializable {
         // Update the ListView if necessary
     }
 
-   /* @FXML
-    private void handleSearchButtonAction() {
-        // Implement your search logic here
-        // Update moviesListView with the results
-    }*/
-
     @FXML
     private void handleFavoritesButtonAction() {
         // Filter the ListView to show only favorite movies
