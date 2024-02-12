@@ -15,6 +15,24 @@ import java.util.stream.Collectors;
 
 @CommandLine.Command(name = "AllMovies", description = "List all movies")
 public class ListMoviesCommand implements Runnable {
+    private User currentUser;
+    public void setCurrentUser(User user) {
+        this.currentUser = user;
+    }
+    public static void main(String[] args) {
+        // Initialize your CLI application components
+        ListMoviesCommand appCLI = new ListMoviesCommand();
+
+        // Simple user management simulation
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter your username:");
+        String username = scanner.nextLine().trim();
+        User user = new User(username); // Simplified: Creating a new user for each session
+        appCLI.setCurrentUser(user); // Set the current user in the CLI application
+
+        // Proceed with the application logic
+        appCLI.run();
+    }
 
     @CommandLine.Option(names = {"--title"}, description = "Search by title")
     private String title;
@@ -92,7 +110,7 @@ public class ListMoviesCommand implements Runnable {
             }
 
             // Ask if the user wants to refine the search further
-            System.out.println("Do you want to refine your search? (yes/no)");
+            System.out.println("Do you want to add criteria search ? (yes/no)");
             input = scanner.nextLine().trim();
             if ("no".equalsIgnoreCase(input)) {
                 break; // Exit loop if user does not want to refine search further
@@ -180,17 +198,6 @@ public class ListMoviesCommand implements Runnable {
     }
 
 
-    private void resetSearchCriteria() {
-        title = null;
-        partialTitle = null;
-        voteAverage = null;
-        minVoteAverage = null;
-        maxVoteAverage = null;
-        genreIds = null;
-        releaseDate = null;
-        releaseDateAfter = null;
-        releaseDateBefore = null;
-    }
 
 
     private void saveResultsToFile(List<Movie> movies, String fileName) {
@@ -231,7 +238,7 @@ public class ListMoviesCommand implements Runnable {
         List<Movie> allTheMovies = new ArrayList<>();
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode jsonNode = objectMapper.readTree(new File("src/text.json"));
+            JsonNode jsonNode = objectMapper.readTree(new File("app/src/text.json"));
             JsonNode resultsNode = jsonNode.get("results");
 
             for (JsonNode result : resultsNode) {

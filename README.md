@@ -42,6 +42,11 @@ Tous les Movies :./gradlew run --args="list"
 Mettre tous les Movies dans le fichier output.txt :./gradlew run --args="AllMovies --outputFile=output.txt"
 Tous les Movies avec titre "Monkeyshines" et genre ='99'./gradlew run --args="AllMovies --partialTitle=Monkeyshines --genreIds=99"
 
+for interactive mode in terminal:
+we start by ./gradlew run --args="AllMovies"
+And then you are just getting questions about what to do with the results
+
+
 
 
 
