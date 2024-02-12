@@ -3,6 +3,8 @@ package moviesapp.controller;
 
 
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import moviesapp.ListMoviesCommand;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -43,6 +45,7 @@ public class AppController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         initializeGenreMap();
+        genreComboBox.getItems().addAll(genreNameToIdMap.keySet());
         loadMovies();
 
 
@@ -151,6 +154,23 @@ public class AppController implements Initializable {
     private void loadMovies() {
         List<Movie> movies = getAllTheMovies(); // Retrieve the list of all movies
         moviesListView.getItems().setAll(movies); // Add movies to the ListView
+    }
+
+    public static List<Movie> getAllTheMovies() {
+        List<Movie> allTheMovies = new ArrayList<>();
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonNode = objectMapper.readTree(new File("src/text.json"));
+            JsonNode resultsNode = jsonNode.get("results");
+
+            for (JsonNode result : resultsNode) {
+                Movie movie = objectMapper.treeToValue(result, Movie.class);
+                allTheMovies.add(movie);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return allTheMovies;
     }
 
 
