@@ -1,4 +1,4 @@
-package moviesapp;
+/*package moviesapp;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -123,4 +123,4 @@ public class ListMoviesCommand implements Runnable {
         }
         return allTheMovies;
     }
-}
+}*/
