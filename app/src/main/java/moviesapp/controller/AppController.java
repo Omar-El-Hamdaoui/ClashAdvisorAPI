@@ -44,7 +44,7 @@ public class AppController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        initializeGenreMap();
+        initializeGenreMap() ;
         genreComboBox.getItems().addAll(genreNameToIdMap.keySet());
         loadMovies();
 
