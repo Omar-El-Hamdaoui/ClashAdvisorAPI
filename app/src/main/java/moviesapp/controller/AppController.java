@@ -3,6 +3,8 @@ package moviesapp.controller;
 
 
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import moviesapp.ListMoviesCommand;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -39,10 +41,13 @@ public class AppController implements Initializable {
     private Button favoritesButton;
     @FXML
     private ListView<Movie> moviesListView;
+    private Set<Movie> favoriteMovies = new HashSet<>();
+
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        initializeGenreMap();
+        initializeGenreMap() ;
+        genreComboBox.getItems().addAll(genreNameToIdMap.keySet());
         loadMovies();
 
 
@@ -60,19 +65,20 @@ public class AppController implements Initializable {
 
                     VBox vBoxText = new VBox(5);
                     Label titleLabel = new Label(movie.getTitle());
-                    Label yearLabel = new Label(String.valueOf(movie.getReleaseDate().substring(0, 4))); // assuming release date is in a format that includes the year at the beginning
+                    Label yearLabel = new Label(movie.getReleaseDate().substring(0, 4));
                     vBoxText.getChildren().addAll(titleLabel, yearLabel);
 
                     HBox starsBox = createStarsBox(movie.getVoteAverage());
 
-                    Button likeButton = new Button("like");
-                    likeButton.setOnAction(event -> toggleFavorite(movie));
+                    Button likeButton = new Button(favoriteMovies.contains(movie) ? "Unlike" : "Like");
+                    likeButton.setOnAction(event -> {
+                        toggleFavorite(movie);
+                        likeButton.setText(favoriteMovies.contains(movie) ? "Unlike" : "Like");
+                        moviesListView.refresh();
+                    });
 
-                    // Adjust the styling of the title and year label to match your sketch
                     titleLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px;");
                     yearLabel.setStyle("-fx-font-size: 12px;");
-
-                    // Set the preferred width for the labels and the stars box to align them as in the sketch
                     titleLabel.setPrefWidth(200);
                     yearLabel.setPrefWidth(200);
                     starsBox.setPrefWidth(100);
@@ -81,25 +87,12 @@ public class AppController implements Initializable {
                     setGraphic(hBox);
                 }
             }
+
         });
 
     };
 
 
-    private HBox createRatingBox(double rating) {
-        HBox ratingBox = new HBox();
-        for (int i = 0; i < 5; i++) {
-            Label starLabel = new Label(i < rating ? "★" : "☆");
-            ratingBox.getChildren().add(starLabel);
-        }
-        return ratingBox;
-    }
-
-    /*private void loadMovies() {
-        // Example logic to load movies
-        List<Movie> movies = getAllTheMovies();
-        moviesListView.getItems().setAll(movies);
-    }*/
 
     @FXML
     private void handleSearchButtonAction() {
@@ -151,6 +144,23 @@ public class AppController implements Initializable {
     private void loadMovies() {
         List<Movie> movies = getAllTheMovies(); // Retrieve the list of all movies
         moviesListView.getItems().setAll(movies); // Add movies to the ListView
+    }
+
+    public static List<Movie> getAllTheMovies() {
+        List<Movie> allTheMovies = new ArrayList<>();
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonNode = objectMapper.readTree(new File("src/text.json"));
+            JsonNode resultsNode = jsonNode.get("results");
+
+            for (JsonNode result : resultsNode) {
+                Movie movie = objectMapper.treeToValue(result, Movie.class);
+                allTheMovies.add(movie);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return allTheMovies;
     }
 
 
@@ -225,12 +235,23 @@ public class AppController implements Initializable {
 
 
     private void toggleFavorite(Movie movie) {
-        // Toggle the favorite status of the movie
-        // Update the ListView if necessary
+        if (favoriteMovies.contains(movie)) {
+            favoriteMovies.remove(movie);
+        } else {
+            favoriteMovies.add(movie);
+        }
+        moviesListView.refresh(); // Refresh ListView to reflect the change
     }
+
 
     @FXML
     private void handleFavoritesButtonAction() {
-        // Filter the ListView to show only favorite movies
+        moviesListView.getItems().setAll(favoriteMovies);
+    }
+
+
+    @FXML
+    private void handleShowAllMoviesAction() {
+        loadMovies(); // Load all movies back into the list view
     }
 }
