@@ -28,34 +28,16 @@ public class ListMoviesCommand implements Runnable {
         appCLI.run();
     }
 
-    @CommandLine.Option(names = {"--title"}, description = "Search by title")
     private String title;
-    @CommandLine.Option(names = {"--partialTitle"}, description = "Search by partial title")
     private String partialTitle;
-
-    @CommandLine.Option(names = {"--voteAverage"}, description = "Search by exact vote average")
     private Double voteAverage;
-
-    @CommandLine.Option(names = {"--minVoteAverage"}, description = "Search by minimum vote average")
     private Double minVoteAverage;
-
-    @CommandLine.Option(names = {"--maxVoteAverage"}, description = "Search by maximum vote average")
     private Double maxVoteAverage;
-
-    @CommandLine.Option(names = {"--genreIds"}, description = "Search by genre IDs")
     private List<Integer> genreIds;
-
-    @CommandLine.Option(names = {"--releaseDate"}, description = "Search by release date")
     private String releaseDate;
-
-    @CommandLine.Option(names = {"--releaseDateAfter"}, description = "Search for movies released after a certain date")
     private String releaseDateAfter;
-
-    @CommandLine.Option(names = {"--releaseDateBefore"}, description = "Search for movies released before a certain date")
     private String releaseDateBefore;
-    @CommandLine.Option(names = {"--outputFile"}, description = "Specify the output file for results")
     private String outputFile;
-    @CommandLine.Option(names = {"--allDetails"}, description = "Return all the details of the Movie")
     private String allDetails;
 
     @Override
