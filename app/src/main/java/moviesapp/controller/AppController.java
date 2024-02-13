@@ -254,4 +254,8 @@ public class AppController implements Initializable {
     private void handleShowAllMoviesAction() {
         loadMovies(); // Load all movies back into the list view
     }
+    @FXML
+    private void restart(){
+        favoriteMovies.clear();
+    }
 }
