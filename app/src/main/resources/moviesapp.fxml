@@ -8,21 +8,21 @@
         <VBox spacing="10" style="-fx-padding: 10;" BorderPane.alignment="CENTER">
             <Label text="FILTERS:"/>
             <HBox spacing="5" alignment="CENTER_LEFT">
-                <Label text="name:"/>
+                <Label text="Title:"/>
                 <TextField fx:id="nameField" prefWidth="150"/>
             </HBox>
             <HBox spacing="5" alignment="CENTER_LEFT">
-                <Label text="years:"/>
+                <Label text="Years:"/>
                 <TextField fx:id="fromYearField" prefWidth="70" promptText="from"/>
                 <Label text="to"/>
                 <TextField fx:id="toYearField" prefWidth="70" promptText="to"/>
             </HBox>
             <HBox spacing="5" alignment="CENTER_LEFT">
-                <Label text="genre:"/>
+                <Label text="Genre:"/>
                 <ComboBox fx:id="genreComboBox" prefWidth="150"/>
             </HBox>
             <HBox spacing="5" alignment="CENTER_LEFT">
-                <Label text="rating:"/>
+                <Label text="Rating:"/>
                 <TextField fx:id="ratingField" prefWidth="50" promptText="at least"/>
             </HBox>
             <Button fx:id="searchButton" text="GO" maxWidth="Infinity" onAction="#handleSearchButtonAction"/>
@@ -34,5 +34,6 @@
     </left>
     <center>
         <ListView fx:id="moviesListView" BorderPane.alignment="CENTER"/>
+
     </center>
 </BorderPane>
