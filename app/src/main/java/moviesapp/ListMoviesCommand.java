@@ -7,70 +7,237 @@ import picocli.CommandLine;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @CommandLine.Command(name = "AllMovies", description = "List all movies")
 public class ListMoviesCommand implements Runnable {
+    private User currentUser;
+    public void setCurrentUser(User user) {
+        this.currentUser = user;
+    }
+    public static void main(String[] args) {
+        // Initialize your CLI application components
+        ListMoviesCommand appCLI = new ListMoviesCommand();
 
-    @CommandLine.Option(names = {"--title"}, description = "Search by title")
+
+        // Proceed with the application logic
+        appCLI.run();
+    }
     private String title;
-    @CommandLine.Option(names = {"--partialTitle"}, description = "Search by partial title")
+
     private String partialTitle;
 
-    @CommandLine.Option(names = {"--voteAverage"}, description = "Search by exact vote average")
     private Double voteAverage;
 
-    @CommandLine.Option(names = {"--minVoteAverage"}, description = "Search by minimum vote average")
     private Double minVoteAverage;
 
-    @CommandLine.Option(names = {"--maxVoteAverage"}, description = "Search by maximum vote average")
     private Double maxVoteAverage;
 
-    @CommandLine.Option(names = {"--genreIds"}, description = "Search by genre IDs")
     private List<Integer> genreIds;
 
-    @CommandLine.Option(names = {"--releaseDate"}, description = "Search by release date")
     private String releaseDate;
-
-    @CommandLine.Option(names = {"--releaseDateAfter"}, description = "Search for movies released after a certain date")
     private String releaseDateAfter;
-
-    @CommandLine.Option(names = {"--releaseDateBefore"}, description = "Search for movies released before a certain date")
     private String releaseDateBefore;
-    @CommandLine.Option(names = {"--outputFile"}, description = "Specify the output file for results")
     private String outputFile;
-    @CommandLine.Option(names = {"--allDetails"}, description = "Return all the details of the Movie")
     private String allDetails;
+    private Set<Movie> favoriteMovies = new HashSet<>();
+
 
     @Override
     public void run() {
         List<Movie> allTheMovies = getAllTheMovies();
+        List<Movie> filteredMovies = filterMovies(allTheMovies);
 
-        // Filter movies based on user-specified criteria
-        List<Movie> filteredMovies = allTheMovies.stream()
+        // Print the filtered movies or save to a file
+        if (outputFile != null) {
+            saveResultsToFile(filteredMovies, outputFile);
+        } else if (allDetails != null) {
+            printResultsToConsole(filteredMovies);
+        } else {
+            printResultsTitles(filteredMovies);
+        }
+
+        // Start interactive search if not saving to file
+        if (outputFile == null) {
+            interactiveSearch(filteredMovies);
+        }
+    }
+
+    private void addFavoriteMovie(Movie movie) {
+        favoriteMovies.add(movie);
+        System.out.println("Movie added to favorites: " + movie.getTitle());
+    }
+
+    private void removeFavoriteMovie(Movie movie) {
+        if (favoriteMovies.remove(movie)) {
+            System.out.println("Movie removed from favorites: " + movie.getTitle());
+        } else {
+            System.out.println("Movie not found in favorites: " + movie.getTitle());
+        }
+    }
+
+    private void listFavoriteMovies() {
+        if (favoriteMovies.isEmpty()) {
+            System.out.println("No favorite movies.");
+        } else {
+            System.out.println("Favorite Movies:");
+            favoriteMovies.forEach(movie -> System.out.println(movie.getTitle()));
+        }
+    }
+
+
+
+    private void interactiveSearch(List<Movie> movies) {
+        Scanner scanner = new Scanner(System.in);
+        String input;
+
+        do {
+            // Display current search results
+            printResults(movies);
+
+            boolean manageFavorites = true;
+            while (manageFavorites) {
+                // Ask if the user wants to manage favorite movies
+                System.out.println("Do you want to manage favorite movies? (add, remove, list, done)");
+                input = scanner.nextLine().trim();
+                switch (input.toLowerCase()) {
+                    case "add":
+                        System.out.println("Enter the title of the movie to add to favorites:");
+                        String titleToAdd = scanner.nextLine().trim();
+                        movies.stream()
+                                .filter(movie -> movie.getTitle().equalsIgnoreCase(titleToAdd))
+                                .findFirst()
+                                .ifPresentOrElse(
+                                        this::addFavoriteMovie,
+                                        () -> System.out.println("Movie not found: " + titleToAdd)
+                                );
+                        break;
+                    case "remove":
+                        System.out.println("Enter the title of the movie to remove from favorites:");
+                        String titleToRemove = scanner.nextLine().trim();
+                        movies.stream()
+                                .filter(movie -> movie.getTitle().equalsIgnoreCase(titleToRemove))
+                                .findFirst()
+                                .ifPresentOrElse(
+                                        this::removeFavoriteMovie,
+                                        () -> System.out.println("Movie not found: " + titleToRemove)
+                                );
+                        break;
+                    case "list":
+                        listFavoriteMovies();
+                        break;
+                    case "done":
+                        manageFavorites = false; // User is done managing favorites
+                        break;
+                    default:
+                        System.out.println("Invalid option. Please choose add, remove, list, or done.");
+                        break;
+                }
+            }
+
+            // Ask to save results to file
+            System.out.println("Do you want to save the results to a file? (yes/no)");
+            input = scanner.nextLine().trim();
+            if ("yes".equalsIgnoreCase(input)) {
+                System.out.println("Enter file name:");
+                String fileName = scanner.nextLine().trim();
+                saveResultsToFile(movies, fileName);
+                break; // After saving, exit the loop as the user's primary action is completed
+            }
+
+            // Ask if the user wants to refine the search further
+            System.out.println("Do you want to add criteria to search? (yes/no)");
+            input = scanner.nextLine().trim();
+            if ("no".equalsIgnoreCase(input)) {
+                break; // Exit loop if user does not want to refine search further
+            }
+
+            // Refine the search based on user inputs
+            System.out.println("Enter criteria for refining search (title, partialTitle, voteAverage, minVoteAverage, maxVoteAverage, genreIds, releaseDate, releaseDateAfter, releaseDateBefore):");
+            String criteria = scanner.nextLine().trim();
+            applyCriteria(criteria, scanner);
+
+            // Re-filter movies based on the newly applied criteria
+            movies = filterMovies(getAllTheMovies()); // It's important to filter from all movies again
+        } while (true);
+    }
+
+
+
+    private void applyCriteria(String criteria, Scanner scanner) {
+        switch (criteria) {
+            case "title":
+                System.out.println("Enter title:");
+                title = scanner.nextLine().trim();
+                break;
+            case "partialTitle":
+                System.out.println("Enter partial title:");
+                partialTitle = scanner.nextLine().trim();
+                break;
+            case "voteAverage":
+                System.out.println("Enter vote average:");
+                voteAverage = Double.valueOf(scanner.nextLine().trim());
+                break;
+            case "minVoteAverage":
+                System.out.println("Enter minimum vote average:");
+                minVoteAverage = Double.valueOf(scanner.nextLine().trim());
+                break;
+            case "maxVoteAverage":
+                System.out.println("Enter maximum vote average:");
+                maxVoteAverage = Double.valueOf(scanner.nextLine().trim());
+                break;
+            case "genreIds":
+                System.out.println("Enter genre IDs (comma-separated):");
+                String[] ids = scanner.nextLine().trim().split(",");
+                genreIds = Arrays.stream(ids).map(Integer::valueOf).collect(Collectors.toList());
+                break;
+            case "releaseDate":
+                System.out.println("Enter release date:");
+                releaseDate = scanner.nextLine().trim();
+                break;
+            case "releaseDateAfter":
+                System.out.println("Enter release date after:");
+                releaseDateAfter = scanner.nextLine().trim();
+                break;
+            case "releaseDateBefore":
+                System.out.println("Enter release date before:");
+                releaseDateBefore = scanner.nextLine().trim();
+                break;
+            default:
+                System.out.println("Invalid criteria. Please try again.");
+                break;
+        }
+    }
+
+
+
+    private void printResults(List<Movie> movies) {
+        if ("full".equals(allDetails)) {
+            printResultsToConsole(movies);
+        } else {
+            printResultsTitles(movies);
+        }
+    }
+
+
+
+    private List<Movie> filterMovies(List<Movie> movies) {
+        return movies.stream()
                 .filter(movie -> (title == null || movie.getTitle().contains(title))
                         && (partialTitle == null || movie.getTitle().contains(partialTitle))
-                        && (voteAverage == null || movie.getVoteAverage() == voteAverage)
+                        && (voteAverage == null || movie.getVoteAverage()==(voteAverage))
                         && (minVoteAverage == null || movie.getVoteAverage() >= minVoteAverage)
                         && (maxVoteAverage == null || movie.getVoteAverage() <= maxVoteAverage)
                         && (genreIds == null || movie.getGenreIds() != null && movie.getGenreIds().length > 0
                         && movieContainsAnyGenre(movie, genreIds))
                         && (releaseDate == null || movie.getReleaseDate().contains(releaseDate))
-                        && (releaseDateAfter == null || movie.getReleaseDate().compareTo(releaseDateAfter) >= 0)
-                        && (releaseDateBefore == null || movie.getReleaseDate().compareTo(releaseDateBefore) <= 0))
+                        && (releaseDateAfter == null || movie.getReleaseDate().compareTo(releaseDateAfter) > 0)
+                        && (releaseDateBefore == null || movie.getReleaseDate().compareTo(releaseDateBefore) < 0))
                 .collect(Collectors.toList());
+    }
 
-        // Print the filtered movies or save to a file
-        if (outputFile != null) {
-            saveResultsToFile(filteredMovies, outputFile);}
-       else if (allDetails !=null) {
-                printResultsToConsole(filteredMovies);
-            } else {
-                printResultsTitles(filteredMovies);
-            }
-        }
+
 
 
     private void saveResultsToFile(List<Movie> movies, String fileName) {
@@ -111,7 +278,7 @@ public class ListMoviesCommand implements Runnable {
         List<Movie> allTheMovies = new ArrayList<>();
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode jsonNode = objectMapper.readTree(new File("src/text.json"));
+            JsonNode jsonNode = objectMapper.readTree(new File("app/src/text.json"));
             JsonNode resultsNode = jsonNode.get("results");
 
             for (JsonNode result : resultsNode) {
@@ -124,3 +291,4 @@ public class ListMoviesCommand implements Runnable {
         return allTheMovies;
     }
 }
+

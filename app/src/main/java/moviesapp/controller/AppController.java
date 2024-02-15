@@ -6,7 +6,6 @@ package moviesapp.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.scene.input.MouseButton;
-import moviesapp.ListMoviesCommand;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
@@ -21,8 +20,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static moviesapp.ListMoviesCommand.getAllTheMovies;
 
 public class AppController implements Initializable {
 
@@ -61,35 +58,41 @@ public class AppController implements Initializable {
                     setText(null);
                     setGraphic(null);
                 } else {
+                    // Initialize the container HBox with spacing and padding
                     HBox hBox = new HBox(10);
                     hBox.setAlignment(Pos.CENTER_LEFT);
                     hBox.setPadding(new Insets(5, 10, 5, 10));
 
+                    // Create a VBox for text elements
                     VBox vBoxText = new VBox(5);
                     Label titleLabel = new Label(movie.getTitle());
                     Label yearLabel = new Label(movie.getReleaseDate().substring(0, 4));
                     vBoxText.getChildren().addAll(titleLabel, yearLabel);
 
+                    // Generate the stars rating box
                     HBox starsBox = createStarsBox(movie.getVoteAverage());
 
-                    Button likeButton = new Button(favoriteMovies.contains(movie) ? "Unlike" : "Like");
+                    // Initialize the like button and set its action
+                    Button likeButton = new Button();
                     likeButton.setOnAction(event -> {
                         toggleFavorite(movie);
+                        // Immediately update the button text based on the new favorite status
                         likeButton.setText(favoriteMovies.contains(movie) ? "Unlike" : "Like");
+                        // This refresh call might be redundant if the like button's text is already updated
                         moviesListView.refresh();
                     });
-                    setOnMouseClicked(event -> {
-                        if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 1) {
-                            handleMovieClick();
-                        }
-                    });
 
+                    // Set the initial text of the like button based on whether the movie is a favorite
+                    likeButton.setText(favoriteMovies.contains(movie) ? "Unlike" : "Like");
+
+                    // Apply styles and set preferred widths for better UI consistency
                     titleLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px;");
                     yearLabel.setStyle("-fx-font-size: 12px;");
                     titleLabel.setPrefWidth(200);
                     yearLabel.setPrefWidth(200);
                     starsBox.setPrefWidth(100);
 
+                    // Assemble the cell's graphic layout
                     hBox.getChildren().addAll(vBoxText, starsBox, likeButton);
                     setGraphic(hBox);
                 }
@@ -292,5 +295,7 @@ public class AppController implements Initializable {
             alert.showAndWait();
         }
     }
+
+
 
 }
