@@ -84,6 +84,11 @@ public class AppController implements Initializable {
 
                     // Set the initial text of the like button based on whether the movie is a favorite
                     likeButton.setText(favoriteMovies.contains(movie) ? "Unlike" : "Like");
+                    setOnMouseClicked(event -> {
+                        if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 1) {
+                            handleMovieClick();
+                        }
+                    });
 
                     // Apply styles and set preferred widths for better UI consistency
                     titleLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px;");
