@@ -7,10 +7,7 @@ import picocli.CommandLine;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @CommandLine.Command(name = "AllMovies", description = "List all movies")
@@ -44,6 +41,8 @@ public class ListMoviesCommand implements Runnable {
     private String releaseDateBefore;
     private String outputFile;
     private String allDetails;
+    private Set<Movie> favoriteMovies = new HashSet<>();
+
 
     @Override
     public void run() {
@@ -65,6 +64,30 @@ public class ListMoviesCommand implements Runnable {
         }
     }
 
+    private void addFavoriteMovie(Movie movie) {
+        favoriteMovies.add(movie);
+        System.out.println("Movie added to favorites: " + movie.getTitle());
+    }
+
+    private void removeFavoriteMovie(Movie movie) {
+        if (favoriteMovies.remove(movie)) {
+            System.out.println("Movie removed from favorites: " + movie.getTitle());
+        } else {
+            System.out.println("Movie not found in favorites: " + movie.getTitle());
+        }
+    }
+
+    private void listFavoriteMovies() {
+        if (favoriteMovies.isEmpty()) {
+            System.out.println("No favorite movies.");
+        } else {
+            System.out.println("Favorite Movies:");
+            favoriteMovies.forEach(movie -> System.out.println(movie.getTitle()));
+        }
+    }
+
+
+
     private void interactiveSearch(List<Movie> movies) {
         Scanner scanner = new Scanner(System.in);
         String input;
@@ -73,11 +96,44 @@ public class ListMoviesCommand implements Runnable {
             // Display current search results
             printResults(movies);
 
-            // Ask for more details
-            System.out.println("Do you want to see all details? (yes/no)");
-            allDetails = scanner.nextLine().trim();
-            if ("yes".equalsIgnoreCase(allDetails)) {
-                printResultsToConsole(movies); // If yes, print all details
+            boolean manageFavorites = true;
+            while (manageFavorites) {
+                // Ask if the user wants to manage favorite movies
+                System.out.println("Do you want to manage favorite movies? (add, remove, list, done)");
+                input = scanner.nextLine().trim();
+                switch (input.toLowerCase()) {
+                    case "add":
+                        System.out.println("Enter the title of the movie to add to favorites:");
+                        String titleToAdd = scanner.nextLine().trim();
+                        movies.stream()
+                                .filter(movie -> movie.getTitle().equalsIgnoreCase(titleToAdd))
+                                .findFirst()
+                                .ifPresentOrElse(
+                                        this::addFavoriteMovie,
+                                        () -> System.out.println("Movie not found: " + titleToAdd)
+                                );
+                        break;
+                    case "remove":
+                        System.out.println("Enter the title of the movie to remove from favorites:");
+                        String titleToRemove = scanner.nextLine().trim();
+                        movies.stream()
+                                .filter(movie -> movie.getTitle().equalsIgnoreCase(titleToRemove))
+                                .findFirst()
+                                .ifPresentOrElse(
+                                        this::removeFavoriteMovie,
+                                        () -> System.out.println("Movie not found: " + titleToRemove)
+                                );
+                        break;
+                    case "list":
+                        listFavoriteMovies();
+                        break;
+                    case "done":
+                        manageFavorites = false; // User is done managing favorites
+                        break;
+                    default:
+                        System.out.println("Invalid option. Please choose add, remove, list, or done.");
+                        break;
+                }
             }
 
             // Ask to save results to file
@@ -87,24 +143,27 @@ public class ListMoviesCommand implements Runnable {
                 System.out.println("Enter file name:");
                 String fileName = scanner.nextLine().trim();
                 saveResultsToFile(movies, fileName);
-                break; // After saving, we break the loop as the user's primary action is completed
+                break; // After saving, exit the loop as the user's primary action is completed
             }
 
             // Ask if the user wants to refine the search further
-            System.out.println("Do you want to add criteria search ? (yes/no)");
+            System.out.println("Do you want to add criteria to search? (yes/no)");
             input = scanner.nextLine().trim();
             if ("no".equalsIgnoreCase(input)) {
                 break; // Exit loop if user does not want to refine search further
             }
 
             // Refine the search based on user inputs
-            System.out.println("Enter criteria for refining search (title/partialTitle/voteAverage/minVoteAverage/maxVoteAverage/genreIds/releaseDate/releaseDateAfter/releaseDateBefore):");
+            System.out.println("Enter criteria for refining search (title, partialTitle, voteAverage, minVoteAverage, maxVoteAverage, genreIds, releaseDate, releaseDateAfter, releaseDateBefore):");
             String criteria = scanner.nextLine().trim();
             applyCriteria(criteria, scanner);
 
-            movies = filterMovies(movies); // Re-filter movies based on the newly applied criteria
+            // Re-filter movies based on the newly applied criteria
+            movies = filterMovies(getAllTheMovies()); // It's important to filter from all movies again
         } while (true);
     }
+
+
 
     private void applyCriteria(String criteria, Scanner scanner) {
         switch (criteria) {
