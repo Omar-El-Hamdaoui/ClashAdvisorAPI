@@ -49,15 +49,6 @@ public class ListMoviesCommand implements Runnable {
         List<Movie> allTheMovies = getAllTheMovies();
         List<Movie> filteredMovies = filterMovies(allTheMovies);
 
-        // Print the filtered movies or save to a file
-        if (outputFile != null) {
-            saveResultsToFile(filteredMovies, outputFile);
-        } else if (allDetails != null) {
-            printResultsToConsole(filteredMovies);
-        } else {
-            printResultsTitles(filteredMovies);
-        }
-
         // Start interactive search if not saving to file
         if (outputFile == null) {
             interactiveSearch(filteredMovies);
