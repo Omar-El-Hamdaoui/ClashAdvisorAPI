@@ -166,7 +166,7 @@ public class AppController implements Initializable {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode jsonNode = objectMapper.readTree(new File("src/text.json"));
-            JsonNode resultsNode = jsonNode.get("results");
+            JsonNode resultsNode = jsonNode.get("results") ;
 
             for (JsonNode result : resultsNode) {
                 Movie movie = objectMapper.treeToValue(result, Movie.class);

@@ -49,6 +49,13 @@ public class ListMoviesCommand implements Runnable {
         List<Movie> allTheMovies = getAllTheMovies();
         List<Movie> filteredMovies = filterMovies(allTheMovies);
 
+        // Print the filtered movies or save to a file
+        if (outputFile != null) {
+            saveResultsToFile(filteredMovies, outputFile);
+        } else if (allDetails != null) {
+            printResultsToConsole(filteredMovies);
+        }
+
         // Start interactive search if not saving to file
         if (outputFile == null) {
             interactiveSearch(filteredMovies);
@@ -83,13 +90,12 @@ public class ListMoviesCommand implements Runnable {
         Scanner scanner = new Scanner(System.in);
         String input;
 
-        do {
-            // Display current search results
-            printResults(movies);
+        // Initially print the results
+        printResults(movies);
 
+        do {
             boolean manageFavorites = true;
             while (manageFavorites) {
-                // Ask if the user wants to manage favorite movies
                 System.out.println("Do you want to manage favorite movies? (add, remove, list, done)");
                 input = scanner.nextLine().trim();
                 switch (input.toLowerCase()) {
@@ -119,7 +125,7 @@ public class ListMoviesCommand implements Runnable {
                         listFavoriteMovies();
                         break;
                     case "done":
-                        manageFavorites = false; // User is done managing favorites
+                        manageFavorites = false;
                         break;
                     default:
                         System.out.println("Invalid option. Please choose add, remove, list, or done.");
@@ -127,32 +133,31 @@ public class ListMoviesCommand implements Runnable {
                 }
             }
 
-            // Ask to save results to file
             System.out.println("Do you want to save the results to a file? (yes/no)");
             input = scanner.nextLine().trim();
             if ("yes".equalsIgnoreCase(input)) {
                 System.out.println("Enter file name:");
                 String fileName = scanner.nextLine().trim();
                 saveResultsToFile(movies, fileName);
-                break; // After saving, exit the loop as the user's primary action is completed
+                break; // Exit after saving
             }
 
-            // Ask if the user wants to refine the search further
             System.out.println("Do you want to add criteria to search? (yes/no)");
             input = scanner.nextLine().trim();
             if ("no".equalsIgnoreCase(input)) {
-                break; // Exit loop if user does not want to refine search further
+                break; // Exit loop if no further refinement is desired
             }
 
-            // Refine the search based on user inputs
             System.out.println("Enter criteria for refining search (title, partialTitle, voteAverage, minVoteAverage, maxVoteAverage, genreIds, releaseDate, releaseDateAfter, releaseDateBefore):");
             String criteria = scanner.nextLine().trim();
             applyCriteria(criteria, scanner);
 
             // Re-filter movies based on the newly applied criteria
-            movies = filterMovies(getAllTheMovies()); // It's important to filter from all movies again
+            movies = filterMovies(getAllTheMovies()); // Important to re-filter from all movies
+            printResults(movies); // Display updated list after re-filtering
         } while (true);
     }
+
 
 
 
@@ -215,18 +220,19 @@ public class ListMoviesCommand implements Runnable {
 
     private List<Movie> filterMovies(List<Movie> movies) {
         return movies.stream()
-                .filter(movie -> (title == null || movie.getTitle().contains(title))
-                        && (partialTitle == null || movie.getTitle().contains(partialTitle))
-                        && (voteAverage == null || movie.getVoteAverage()==(voteAverage))
+                .filter(movie -> (title == null || movie.getTitle().toLowerCase().contains(title.toLowerCase()))
+                        && (partialTitle == null || movie.getTitle().toLowerCase().contains(partialTitle.toLowerCase()))
+                        // Check for movies within a small range of the specified voteAverage
+                        && (voteAverage == null || (movie.getVoteAverage() >= voteAverage - 0.1 && movie.getVoteAverage() <= voteAverage + 0.1))
                         && (minVoteAverage == null || movie.getVoteAverage() >= minVoteAverage)
                         && (maxVoteAverage == null || movie.getVoteAverage() <= maxVoteAverage)
-                        && (genreIds == null || movie.getGenreIds() != null && movie.getGenreIds().length > 0
-                        && movieContainsAnyGenre(movie, genreIds))
+                        && (genreIds == null || movie.getGenreIds() != null && movie.getGenreIds().length > 0 && movieContainsAnyGenre(movie, genreIds))
                         && (releaseDate == null || movie.getReleaseDate().contains(releaseDate))
                         && (releaseDateAfter == null || movie.getReleaseDate().compareTo(releaseDateAfter) > 0)
                         && (releaseDateBefore == null || movie.getReleaseDate().compareTo(releaseDateBefore) < 0))
                 .collect(Collectors.toList());
     }
+
 
 
 
