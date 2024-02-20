@@ -322,6 +322,7 @@ public class AppController implements Initializable {
     private HBox createStarsBox(double rating) {
         HBox starsBox = new HBox();
         starsBox.setSpacing(5);
+        starsBox.setAlignment(Pos.CENTER);
         for (int i = 1; i <= 5; i++) {
             Label starLabel = new Label();
             if (i <= rating) {
