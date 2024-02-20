@@ -4,8 +4,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
@@ -22,10 +21,15 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import moviesapp.Movie;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class AppController implements Initializable {
@@ -398,30 +402,44 @@ public class AppController implements Initializable {
 
 
     private void saveFavorites() {
-        try (PrintWriter writer = new PrintWriter(favoritesFilePath, StandardCharsets.UTF_8)) {
-            for (Movie movie : favoriteMovies) {
-                writer.println(movie.getId());
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<String> jsonFavorites = favoriteMovies.stream().map(movie -> {
+            try {
+                return objectMapper.writeValueAsString(movie);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
             }
+        }).collect(Collectors.toList());
+
+        try {
+            Files.write(Paths.get(favoritesFilePath), jsonFavorites);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
     private void loadFavorites() {
+        ObjectMapper objectMapper = new ObjectMapper();
         File file = new File(favoritesFilePath);
+        favoriteMovies.clear(); // Réinitialisez l'ensemble des favoris
+
         if (file.exists()) {
-            try (Scanner scanner = new Scanner(file, StandardCharsets.UTF_8)) {
-                while (scanner.hasNextLine()) {
-                    long movieId = Long.parseLong(scanner.nextLine());
-                    // Ici, vous pouvez ajouter une logique pour retrouver le film par son ID et l'ajouter à `favoriteMovies`
-                    // Cela peut nécessiter de stocker une liste ou une carte de tous les films lors du chargement de l'application
+            try {
+                List<String> jsonFavorites = Files.readAllLines(Paths.get(favoritesFilePath));
+                for (String jsonFavorite : jsonFavorites) {
+                    try {
+                        Movie movie = objectMapper.readValue(jsonFavorite, Movie.class);
+                        favoriteMovies.add(movie);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
-            } catch (FileNotFoundException | NumberFormatException e) {
-                e.printStackTrace();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                e.printStackTrace();
             }
         }
     }
+
     private void clearFavoritesFile() {
         try (PrintWriter writer = new PrintWriter(favoritesFilePath, StandardCharsets.UTF_8)) {
             // Écrire dans le fichier sans contenu le vide
