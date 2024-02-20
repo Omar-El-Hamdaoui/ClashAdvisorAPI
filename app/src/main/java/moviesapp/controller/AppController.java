@@ -62,7 +62,7 @@ public class AppController implements Initializable {
 
     private Set<Movie> favoriteMovies = new HashSet<>();
     private int currentUiPage = 1;
-    private final int apiPagesPerUiPage = 10; // Nombre de pages de l'API chargées par page de l'UI
+    private final int apiPagesPerUiPage = 1; // Nombre de pages de l'API chargées par page de l'UI
     private final int totalApiPages = 100; // Total des pages de l'API à charger
     private final int totalPagesUi = totalApiPages / apiPagesPerUiPage;
     private Set<Movie> allMovies = new HashSet<>();
@@ -91,6 +91,15 @@ public class AppController implements Initializable {
                     hBox.setAlignment(Pos.CENTER_LEFT);
                     hBox.setPadding(new Insets(5, 10, 5, 10));
 
+                    // Create ImageView for movie poster
+                    ImageView posterImageView = new ImageView();
+                    posterImageView.setFitWidth(100); // Adjust width as needed
+                    posterImageView.setPreserveRatio(true);
+
+                    // Load and set the poster image
+                    Image posterImage = new Image("https://image.tmdb.org/t/p/w500" + movie.getPosterPath());
+                    posterImageView.setImage(posterImage);
+
                     VBox vBoxText = new VBox(5);
                     Label titleLabel = new Label(movie.getTitle());
                     // Utiliser extractYear pour gérer la date de sortie
@@ -114,7 +123,7 @@ public class AppController implements Initializable {
                     yearLabel.setPrefWidth(200);
                     starsBox.setPrefWidth(100);
 
-                    hBox.getChildren().addAll(vBoxText, starsBox, likeButton);
+                    hBox.getChildren().addAll(posterImageView, vBoxText, starsBox, likeButton);
                     setGraphic(hBox);
 
                     setOnMouseClicked(event -> {
