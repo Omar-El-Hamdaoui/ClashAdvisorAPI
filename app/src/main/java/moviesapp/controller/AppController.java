@@ -51,8 +51,8 @@ public class AppController implements Initializable {
 
     private Set<Movie> favoriteMovies = new HashSet<>();
     private int currentUiPage = 1;
-    private final int apiPagesPerUiPage = 1; // Nombre de pages de l'API chargées par page de l'UI
-    private final int totalApiPages = 1; // Total des pages de l'API à charger
+    private final int apiPagesPerUiPage = 10; // Nombre de pages de l'API chargées par page de l'UI
+    private final int totalApiPages = 100; // Total des pages de l'API à charger
     private final int totalPagesUi = totalApiPages / apiPagesPerUiPage;
     private List<Movie> allMovies = new ArrayList<>();
 
@@ -169,6 +169,38 @@ public class AppController implements Initializable {
         moviesListView.getItems().setAll(movies);
         updateNavigationButtons();
     }
+    public void fetchAllMovies() {
+        OkHttpClient client = new OkHttpClient();
+        ObjectMapper objectMapper = new ObjectMapper();
+        allMovies.clear(); // Assurez-vous que la liste est vide avant de commencer le processus de récupération.
+
+        for (int page = 1; page <= totalApiPages; page++) {
+            Request request = new Request.Builder()
+                    .url("https://api.themoviedb.org/3/movie/popular?language=en-US&page=" + page + "&api_key=b8f844e585235d0341ba72bbc763ead2")
+                    .get()
+                    .build();
+
+            try {
+                Response response = client.newCall(request).execute();
+                if (response.isSuccessful() && response.body() != null) {
+                    String responseBody = response.body().string();
+                    JsonNode rootNode = objectMapper.readTree(responseBody);
+                    JsonNode resultsNode = rootNode.path("results");
+
+                    for (JsonNode node : resultsNode) {
+                        Movie movie = objectMapper.treeToValue(node, Movie.class);
+                        allMovies.add(movie); // Accumulez les films de toutes les pages ici.
+                    }
+                } else {
+                    System.out.println("Failed to get response from the API for page " + page);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                // Il pourrait être judicieux d'introduire une certaine forme de gestion des erreurs ou de réessayer la logique ici.
+            }
+        }
+    }
+
 
 
     public List<Movie> fetchMovies(int page) {
