@@ -70,6 +70,7 @@ public class AppController implements Initializable {
         genreComboBox.getItems().addAll(genreNameToIdMap.keySet());
         loadMovies();
         fetchAllMovies();
+        loadFavorites();
 
         moviesListView.setCellFactory(param -> new ListCell<Movie>() {
             @Override
@@ -331,6 +332,7 @@ public class AppController implements Initializable {
             }
         }
         moviesListView.refresh(); // Rafraîchir la ListView pour refléter le changement
+        saveFavorites();
     }
 
 
@@ -347,7 +349,9 @@ public class AppController implements Initializable {
     @FXML
     private void restart(){
         favoriteMovies.clear();
+        moviesListView.getItems().clear();
         loadMovies();
+        clearFavoritesFile();
     }
     @FXML
     private void handleMovieClick() {
@@ -416,6 +420,13 @@ public class AppController implements Initializable {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        }
+    }
+    private void clearFavoritesFile() {
+        try (PrintWriter writer = new PrintWriter(favoritesFilePath, StandardCharsets.UTF_8)) {
+            // Écrire dans le fichier sans contenu le vide
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
