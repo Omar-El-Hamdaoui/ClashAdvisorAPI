@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@CommandLine.Command(name = "AllMovies", description = "List all movies")
 public class ListMoviesCommand implements Runnable {
     private User currentUser;
     public void setCurrentUser(User user) {
@@ -19,8 +18,6 @@ public class ListMoviesCommand implements Runnable {
     public static void main(String[] args) {
         // Initialize your CLI application components
         ListMoviesCommand appCLI = new ListMoviesCommand();
-
-
         // Proceed with the application logic
         appCLI.run();
     }
@@ -34,14 +31,14 @@ public class ListMoviesCommand implements Runnable {
 
     private Double maxVoteAverage;
 
-    private List<Integer> genreIds;
+    public List<Integer> genreIds;
 
     private String releaseDate;
     private String releaseDateAfter;
     private String releaseDateBefore;
     private String outputFile;
     private String allDetails;
-    private Set<Movie> favoriteMovies = new HashSet<>();
+    public Set<Movie> favoriteMovies = new HashSet<>();
 
 
     @Override
@@ -62,12 +59,12 @@ public class ListMoviesCommand implements Runnable {
         }
     }
 
-    private void addFavoriteMovie(Movie movie) {
+    public void addFavoriteMovie(Movie movie) {
         favoriteMovies.add(movie);
         System.out.println("Movie added to favorites: " + movie.getTitle());
     }
 
-    private void removeFavoriteMovie(Movie movie) {
+    public void removeFavoriteMovie(Movie movie) {
         if (favoriteMovies.remove(movie)) {
             System.out.println("Movie removed from favorites: " + movie.getTitle());
         } else {
@@ -75,7 +72,7 @@ public class ListMoviesCommand implements Runnable {
         }
     }
 
-    private void listFavoriteMovies() {
+    public void listFavoriteMovies() {
         if (favoriteMovies.isEmpty()) {
             System.out.println("No favorite movies.");
         } else {
@@ -159,8 +156,6 @@ public class ListMoviesCommand implements Runnable {
     }
 
 
-
-
     private void applyCriteria(String criteria, Scanner scanner) {
         switch (criteria) {
             case "title":
@@ -208,7 +203,7 @@ public class ListMoviesCommand implements Runnable {
 
 
 
-    private void printResults(List<Movie> movies) {
+    public void printResults(List<Movie> movies) {
         if ("full".equals(allDetails)) {
             printResultsToConsole(movies);
         } else {
@@ -218,7 +213,7 @@ public class ListMoviesCommand implements Runnable {
 
 
 
-    private List<Movie> filterMovies(List<Movie> movies) {
+    public List<Movie> filterMovies(List<Movie> movies) {
         return movies.stream()
                 .filter(movie -> (title == null || movie.getTitle().toLowerCase().contains(title.toLowerCase()))
                         && (partialTitle == null || movie.getTitle().toLowerCase().contains(partialTitle.toLowerCase()))
@@ -287,5 +282,10 @@ public class ListMoviesCommand implements Runnable {
         }
         return allTheMovies;
     }
+
+    public void setTitle(String title){
+        this.title = title;
+    }
+
 }
 
