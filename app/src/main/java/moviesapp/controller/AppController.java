@@ -3,6 +3,9 @@ package moviesapp.controller;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 
@@ -56,6 +59,7 @@ public class AppController implements Initializable {
     private final int totalPagesUi = totalApiPages / apiPagesPerUiPage;
     private Set<Movie> allMovies = new HashSet<>();
     private Map<String, Integer> genreNameToIdMap;
+    private String favoritesFilePath = "favorites.txt";
 
 
 
@@ -388,5 +392,14 @@ public class AppController implements Initializable {
     }
 
 
+    private void saveFavorites() {
+        try (PrintWriter writer = new PrintWriter(favoritesFilePath, StandardCharsets.UTF_8)) {
+            for (Movie movie : favoriteMovies) {
+                writer.println(movie.getId());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 }
