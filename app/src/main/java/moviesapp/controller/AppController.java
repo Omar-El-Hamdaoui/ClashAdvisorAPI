@@ -1,5 +1,8 @@
 package moviesapp.controller;
 
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.GridPane;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -361,21 +364,56 @@ public class AppController implements Initializable {
     private void handleMovieClick() {
         Movie selectedMovie = moviesListView.getSelectionModel().getSelectedItem();
         if (selectedMovie != null) {
-            // Afficher toutes les informations du film (par exemple, dans une boîte de dialogue)
+            // Créer une nouvelle boîte de dialogue d'information
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Details du film");
             alert.setHeaderText(selectedMovie.getTitle());
-            alert.setContentText(
-                    "Adult: " + selectedMovie.isAdult() +'\n'+
-                            "Id: " + selectedMovie.getId() + ","+'\n'+
-                            "Original Language: '" + selectedMovie.getOriginalLanguage() + "'"+'\n'+
-                            "Original Title: '" + selectedMovie.getOriginalTitle() + "'"+'\n'+
-                            "Overview: '" + selectedMovie.getOverview() + "'"+'\n'+
-                            "Popularity: " + selectedMovie.getPopularity() +'\n'+
-                            "Release Date: '" + selectedMovie.getReleaseDate() + "'"+'\n'+
-                            "Video: " + selectedMovie.isVideo() +'\n'+
-                            "Vote Average: " + selectedMovie.getVoteAverage() +'\n'+
-                            "Vote Count: " + selectedMovie.getVoteCount());
+
+            // Créer un GridPane pour organiser l'affichage
+            GridPane gridPane = new GridPane();
+            gridPane.setHgap(10); // Espacement horizontal entre les éléments
+            gridPane.setVgap(5); // Espacement vertical entre les éléments
+
+            // Créer une ImageView pour afficher l'image du poster
+            ImageView imageView = new ImageView();
+            imageView.setFitWidth(200); // Largeur de l'image
+            imageView.setPreserveRatio(true); // Conserver le ratio de l'image
+
+            // Charger et définir l'image du poster
+            String posterUrl = "https://image.tmdb.org/t/p/w500" + selectedMovie.getPosterPath(); // Construire l'URL du poster
+            Image image = new Image(posterUrl);
+            imageView.setImage(image);
+
+            // Ajouter l'image à la première colonne du GridPane
+            gridPane.add(imageView, 0, 0);
+
+            TextArea textArea = new TextArea();
+            textArea.setEditable(false); // Rendre le TextArea en lecture seule
+            textArea.setWrapText(true); // Permettre le retour à la ligne automatique
+
+            // Construire une chaîne de caractères avec toutes les informations du film
+            String movieDetails = "Adult: " + selectedMovie.isAdult() +'\n'+
+                    "Id: " + selectedMovie.getId() + ","+'\n'+
+                    "Original Language: '" + selectedMovie.getOriginalLanguage() + "'"+'\n'+
+                    "Original Title: '" + selectedMovie.getOriginalTitle() + "'"+'\n'+
+                    "Overview: '" + selectedMovie.getOverview() + "'"+'\n'+
+                    "Popularity: " + selectedMovie.getPopularity() +'\n'+
+                    "Release Date: '" + selectedMovie.getReleaseDate() + "'"+'\n'+
+                    "Video: " + selectedMovie.isVideo() +'\n'+
+                    "Vote Average: " + selectedMovie.getVoteAverage() +'\n'+
+                    "Vote Count: " + selectedMovie.getVoteCount();
+
+            // Définir la chaîne de caractères comme contenu du TextArea
+            textArea.setText(movieDetails);
+
+
+            // Ajouter le VBox à la deuxième colonne du GridPane
+            gridPane.add(textArea, 1, 0);
+
+            // Ajouter le GridPane à la boîte de dialogue
+            alert.getDialogPane().setContent(gridPane);
+
+            // Afficher la boîte de dialogue
             alert.showAndWait();
         }
     }
