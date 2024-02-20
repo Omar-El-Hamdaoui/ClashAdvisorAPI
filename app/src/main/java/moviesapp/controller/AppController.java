@@ -1,6 +1,9 @@
 package moviesapp.controller;
 
-
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import java.util.Collections;
 
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -163,17 +166,32 @@ public class AppController implements Initializable {
 
     public static List<Movie> getAllTheMovies() {
         List<Movie> allTheMovies = new ArrayList<>();
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode jsonNode = objectMapper.readTree(new File("src/text.json"));
-            JsonNode resultsNode = jsonNode.get("results") ;
+        OkHttpClient client = new OkHttpClient();
+        ObjectMapper objectMapper = new ObjectMapper();
 
-            for (JsonNode result : resultsNode) {
-                Movie movie = objectMapper.treeToValue(result, Movie.class);
-                allTheMovies.add(movie);
+        for (int pageNumber = 1; pageNumber < 20; pageNumber++) {
+            Request request = new Request.Builder()
+                    .url("https://api.themoviedb.org/3/movie/popular?language=en-US&page=" + pageNumber + "&api_key=b8f844e585235d0341ba72bbc763ead2")
+                    .get()
+                    .build();
+
+            try {
+                Response response = client.newCall(request).execute();
+                if (response.isSuccessful() && response.body() != null) {
+                    String responseBody = response.body().string();
+                    JsonNode jsonNode = objectMapper.readTree(responseBody);
+                    JsonNode resultsNode = jsonNode.get("results");
+
+                    for (JsonNode result : resultsNode) {
+                        Movie movie = objectMapper.treeToValue(result, Movie.class);
+                        allTheMovies.add(movie);
+                    }
+                } else {
+                    System.out.println("Failed to get response from the API for page " + pageNumber); // Log en cas d'échec de la requête
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         return allTheMovies;
     }
@@ -287,20 +305,17 @@ public class AppController implements Initializable {
             alert.setTitle("Details du film");
             alert.setHeaderText(selectedMovie.getTitle());
             alert.setContentText(
-            "Adult: " + selectedMovie.isAdult() +'\n'+
-                    "Id: " + selectedMovie.getId() + ","+'\n'+
-                    "Original Language: '" + selectedMovie.getOriginalLanguage() + "'"+'\n'+
-                    "Original Title: '" + selectedMovie.getOriginalTitle() + "'"+'\n'+
-                    "Overview: '" + selectedMovie.getOverview() + "'"+'\n'+
-                    "Popularity: " + selectedMovie.getPopularity() +'\n'+
-                    "Release Date: '" + selectedMovie.getReleaseDate() + "'"+'\n'+
-                    "Video: " + selectedMovie.isVideo() +'\n'+
-                    "Vote Average: " + selectedMovie.getVoteAverage() +'\n'+
-                    "Vote Count: " + selectedMovie.getVoteCount());
+                    "Adult: " + selectedMovie.isAdult() +'\n'+
+                            "Id: " + selectedMovie.getId() + ","+'\n'+
+                            "Original Language: '" + selectedMovie.getOriginalLanguage() + "'"+'\n'+
+                            "Original Title: '" + selectedMovie.getOriginalTitle() + "'"+'\n'+
+                            "Overview: '" + selectedMovie.getOverview() + "'"+'\n'+
+                            "Popularity: " + selectedMovie.getPopularity() +'\n'+
+                            "Release Date: '" + selectedMovie.getReleaseDate() + "'"+'\n'+
+                            "Video: " + selectedMovie.isVideo() +'\n'+
+                            "Vote Average: " + selectedMovie.getVoteAverage() +'\n'+
+                            "Vote Count: " + selectedMovie.getVoteCount());
             alert.showAndWait();
         }
     }
-
-
-
 }

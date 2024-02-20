@@ -20,6 +20,9 @@ repositories {
 }
 
 dependencies {
+    //this dependecies is for OkHttpClient
+    implementation 'com.squareup.okhttp3:okhttp:4.9.0'
+    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
     // Use JUnit Jupiter for testing.
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
     testImplementation("org.assertj:assertj-core:3.24.2")
