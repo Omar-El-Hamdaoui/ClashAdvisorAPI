@@ -4,6 +4,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
@@ -399,6 +400,22 @@ public class AppController implements Initializable {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+    private void loadFavorites() {
+        File file = new File(favoritesFilePath);
+        if (file.exists()) {
+            try (Scanner scanner = new Scanner(file, StandardCharsets.UTF_8)) {
+                while (scanner.hasNextLine()) {
+                    long movieId = Long.parseLong(scanner.nextLine());
+                    // Ici, vous pouvez ajouter une logique pour retrouver le film par son ID et l'ajouter à `favoriteMovies`
+                    // Cela peut nécessiter de stocker une liste ou une carte de tous les films lors du chargement de l'application
+                }
+            } catch (FileNotFoundException | NumberFormatException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
