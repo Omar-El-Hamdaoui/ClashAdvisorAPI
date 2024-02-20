@@ -55,16 +55,16 @@ public class AppController implements Initializable {
     private final int totalApiPages = 100; // Total des pages de l'API à charger
     private final int totalPagesUi = totalApiPages / apiPagesPerUiPage;
     private Set<Movie> allMovies = new HashSet<>();
+    private Map<String, Integer> genreNameToIdMap;
 
 
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        initializeGenreMap() ;
+        initializeGenreMap();
         genreComboBox.getItems().addAll(genreNameToIdMap.keySet());
         loadMovies();
         fetchAllMovies();
-
 
         moviesListView.setCellFactory(param -> new ListCell<Movie>() {
             @Override
@@ -80,7 +80,9 @@ public class AppController implements Initializable {
 
                     VBox vBoxText = new VBox(5);
                     Label titleLabel = new Label(movie.getTitle());
-                    Label yearLabel = new Label(movie.getReleaseDate().substring(0, 4));
+                    // Utiliser extractYear pour gérer la date de sortie
+                    String yearText = extractYearSafe(movie.getReleaseDate());
+                    Label yearLabel = new Label(yearText);
                     vBoxText.getChildren().addAll(titleLabel, yearLabel);
 
                     HBox starsBox = createStarsBox(movie.getVoteAverage());
@@ -110,8 +112,15 @@ public class AppController implements Initializable {
                 }
             }
         });
+    }
 
-    };
+    private String extractYearSafe(String releaseDate) {
+        if (releaseDate == null || releaseDate.length() < 4) {
+            return "1890";
+        }
+        return releaseDate.substring(0, 4); // Extraher et retourner l'année
+    }
+
 
 
 
@@ -232,48 +241,12 @@ public class AppController implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        allMovies.clear();
-        allMovies.addAll(moviesOnPage);
 
         return moviesOnPage;
     }
 
 
-    public static List<Movie> getAllTheMovies()  {
-        List<Movie> allTheMovies = new ArrayList<>();
-        OkHttpClient client = new OkHttpClient();
-        ObjectMapper objectMapper = new ObjectMapper();
 
-        for (int pageNumber = 1; pageNumber < 20; pageNumber++) {
-            Request request = new Request.Builder()
-                    .url("https://api.themoviedb.org/3/movie/popular?language=en-US&page=" + pageNumber + "&api_key=b8f844e585235d0341ba72bbc763ead2")
-                    .get()
-                    .build();
-
-            try {
-                Response response = client.newCall(request).execute();
-                if (response.isSuccessful() && response.body() != null) {
-                    String responseBody = response.body().string();
-                    JsonNode jsonNode = objectMapper.readTree(responseBody);
-                    JsonNode resultsNode = jsonNode.get("results");
-
-                    for (JsonNode result : resultsNode) {
-                        Movie movie = objectMapper.treeToValue(result, Movie.class);
-                        allTheMovies.add(movie);
-                    }
-                } else {
-                    System.out.println("Failed to get response from the API for page " + pageNumber); // Log en cas d'échec de la requête
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return allTheMovies;
-    }
-
-
-
-    private Map<String, Integer> genreNameToIdMap;
 
     private void initializeGenreMap() {
         genreNameToIdMap = new HashMap<>();
@@ -307,15 +280,14 @@ public class AppController implements Initializable {
 
 
     private int extractYear(String releaseDate) {
-        // Si la date de sortie est nulle, vide ou sa longueur est insuffisante, attribuez une valeur par défaut
         if (releaseDate == null || releaseDate.isEmpty() || releaseDate.length() < 4) {
-            releaseDate = "1800-01-01"; // Date par défaut pour les films sans date de sortie connue
+            return 1800; // Retourne une année par défaut si la date de sortie n'est pas valide
         }
         try {
             return Integer.parseInt(releaseDate.substring(0, 4));
         } catch (NumberFormatException e) {
             System.err.println("Erreur lors de l'extraction de l'année pour la date: " + releaseDate);
-            return -1; // Retournez une valeur d'année invalide ou gérez autrement
+            return -1; // Retourne une valeur d'année invalide en cas d'erreur
         }
     }
 
