@@ -29,6 +29,10 @@
             <Button fx:id="homeButton" text="Home" maxWidth="Infinity" onAction="#handleShowAllMoviesAction"/>
             <Button fx:id="favoritesButton" text="Favourites" maxWidth="Infinity" onAction="#handleFavoritesButtonAction"/>
             <Button fx:id="restartButton" text="Restart" maxWidth="Infinity" onAction="#restart"/>
+            <Button fx:id="prevPageButton" text="Prev" maxWidth="Infinity" onAction="#handlePrevPageAction"/>
+            <Button fx:id="nextPageButton" text="Next" maxWidth="Infinity" onAction="#handleNextPageAction"/>
+
+
 
         </VBox>
     </left>
