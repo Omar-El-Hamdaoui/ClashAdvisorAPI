@@ -2,7 +2,8 @@ package moviesapp;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Objects;
 
 public class Movie {
     private boolean adult;
@@ -27,6 +28,9 @@ public class Movie {
     private double voteAverage;
     @JsonProperty("vote_count")
     private int voteCount;
+
+    private boolean favorite = false;
+
 
     public boolean isAdult() {
         return adult;
@@ -139,6 +143,13 @@ public class Movie {
     public void setVoteCount(int voteCount) {
         this.voteCount = voteCount;
     }
+    public boolean isFavorite() {
+        return favorite;
+    }
+
+    public void setFavorite(boolean favorite) {
+        this.favorite = favorite;
+    }
 
     @Override
     public String toString() {
@@ -157,6 +168,19 @@ public class Movie {
                 "Vote Average: " + voteAverage + ","+'\n'+
                 "Vote Count: " + voteCount +'\n'+
                 "-------------------------------------------------------------------------";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Movie movie = (Movie) o;
+        return id == movie.id; // Compare movies based on their id
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id); // Generate hash code based on id
     }
 }
 

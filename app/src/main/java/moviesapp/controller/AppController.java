@@ -5,7 +5,7 @@ package moviesapp.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import moviesapp.ListMoviesCommand;
+import javafx.scene.input.MouseButton;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
@@ -20,8 +20,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static moviesapp.ListMoviesCommand.getAllTheMovies;
 
 public class AppController implements Initializable {
 
@@ -41,6 +39,7 @@ public class AppController implements Initializable {
     private Button favoritesButton;
     @FXML
     private ListView<Movie> moviesListView;
+
     private Set<Movie> favoriteMovies = new HashSet<>();
 
 
@@ -59,30 +58,46 @@ public class AppController implements Initializable {
                     setText(null);
                     setGraphic(null);
                 } else {
+                    // Initialize the container HBox with spacing and padding
                     HBox hBox = new HBox(10);
                     hBox.setAlignment(Pos.CENTER_LEFT);
                     hBox.setPadding(new Insets(5, 10, 5, 10));
 
+                    // Create a VBox for text elements
                     VBox vBoxText = new VBox(5);
                     Label titleLabel = new Label(movie.getTitle());
                     Label yearLabel = new Label(movie.getReleaseDate().substring(0, 4));
                     vBoxText.getChildren().addAll(titleLabel, yearLabel);
 
+                    // Generate the stars rating box
                     HBox starsBox = createStarsBox(movie.getVoteAverage());
 
-                    Button likeButton = new Button(favoriteMovies.contains(movie) ? "Unlike" : "Like");
+                    // Initialize the like button and set its action
+                    Button likeButton = new Button();
                     likeButton.setOnAction(event -> {
                         toggleFavorite(movie);
+                        // Immediately update the button text based on the new favorite status
                         likeButton.setText(favoriteMovies.contains(movie) ? "Unlike" : "Like");
+                        // This refresh call might be redundant if the like button's text is already updated
                         moviesListView.refresh();
                     });
 
+                    // Set the initial text of the like button based on whether the movie is a favorite
+                    likeButton.setText(favoriteMovies.contains(movie) ? "Unlike" : "Like");
+                    setOnMouseClicked(event -> {
+                        if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 1) {
+                            handleMovieClick();
+                        }
+                    });
+
+                    // Apply styles and set preferred widths for better UI consistency
                     titleLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px;");
                     yearLabel.setStyle("-fx-font-size: 12px;");
                     titleLabel.setPrefWidth(200);
                     yearLabel.setPrefWidth(200);
                     starsBox.setPrefWidth(100);
 
+                    // Assemble the cell's graphic layout
                     hBox.getChildren().addAll(vBoxText, starsBox, likeButton);
                     setGraphic(hBox);
                 }
@@ -169,32 +184,32 @@ public class AppController implements Initializable {
 
     private void initializeGenreMap() {
         genreNameToIdMap = new HashMap<>();
-        genreNameToIdMap.put("action", 28);
-        genreNameToIdMap.put("adventure", 12);
-        genreNameToIdMap.put("animation", 16);
-        genreNameToIdMap.put("comedy", 35);
-        genreNameToIdMap.put("crime", 80);
-        genreNameToIdMap.put("documentary", 99);
-        genreNameToIdMap.put("drama", 18);
-        genreNameToIdMap.put("family", 10751);
-        genreNameToIdMap.put("fantasy", 14);
-        genreNameToIdMap.put("history", 36);
-        genreNameToIdMap.put("horror", 27);
-        genreNameToIdMap.put("music", 10402);
-        genreNameToIdMap.put("mystery", 9648);
-        genreNameToIdMap.put("romance", 10749);
-        genreNameToIdMap.put("science fiction", 878);
-        genreNameToIdMap.put("tv movie", 10770);
-        genreNameToIdMap.put("thriller", 53);
-        genreNameToIdMap.put("war", 10752);
-        genreNameToIdMap.put("western", 37);
+        genreNameToIdMap.put("Action", 28);
+        genreNameToIdMap.put("Adventure", 12);
+        genreNameToIdMap.put("Animation", 16);
+        genreNameToIdMap.put("Comedy", 35);
+        genreNameToIdMap.put("Crime", 80);
+        genreNameToIdMap.put("Documentary", 99);
+        genreNameToIdMap.put("Drama", 18);
+        genreNameToIdMap.put("Family", 10751);
+        genreNameToIdMap.put("Fantasy", 14);
+        genreNameToIdMap.put("History", 36);
+        genreNameToIdMap.put("Horror", 27);
+        genreNameToIdMap.put("Music", 10402);
+        genreNameToIdMap.put("Mystery", 9648);
+        genreNameToIdMap.put("Romance", 10749);
+        genreNameToIdMap.put("Science fiction", 878);
+        genreNameToIdMap.put("Tv movie", 10770);
+        genreNameToIdMap.put("Thriller", 53);
+        genreNameToIdMap.put("War", 10752);
+        genreNameToIdMap.put("Western", 37);
     }
 
     private Integer getGenreIdByName(String genreName) {
         if (genreName == null || genreNameToIdMap == null) {
             return null;
         }
-        return genreNameToIdMap.get(genreName.toLowerCase());
+        return genreNameToIdMap.get(genreName);
     }
 
 
@@ -236,11 +251,15 @@ public class AppController implements Initializable {
 
     private void toggleFavorite(Movie movie) {
         if (favoriteMovies.contains(movie)) {
-            favoriteMovies.remove(movie);
+            favoriteMovies.remove(movie); // Supprimer le film s'il est déjà dans les favoris
         } else {
-            favoriteMovies.add(movie);
+            boolean isAlreadyFavorite = favoriteMovies.stream()
+                    .anyMatch(favorite -> favorite.getId() == movie.getId());
+            if (!isAlreadyFavorite) {
+                favoriteMovies.add(movie); // Ajouter le film s'il n'est pas déjà dans les favoris
+            }
         }
-        moviesListView.refresh(); // Refresh ListView to reflect the change
+        moviesListView.refresh(); // Rafraîchir la ListView pour refléter le changement
     }
 
 
@@ -257,5 +276,31 @@ public class AppController implements Initializable {
     @FXML
     private void restart(){
         favoriteMovies.clear();
+        loadMovies();
     }
+    @FXML
+    private void handleMovieClick() {
+        Movie selectedMovie = moviesListView.getSelectionModel().getSelectedItem();
+        if (selectedMovie != null) {
+            // Afficher toutes les informations du film (par exemple, dans une boîte de dialogue)
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Details du film");
+            alert.setHeaderText(selectedMovie.getTitle());
+            alert.setContentText(
+            "Adult: " + selectedMovie.isAdult() +'\n'+
+                    "Id: " + selectedMovie.getId() + ","+'\n'+
+                    "Original Language: '" + selectedMovie.getOriginalLanguage() + "'"+'\n'+
+                    "Original Title: '" + selectedMovie.getOriginalTitle() + "'"+'\n'+
+                    "Overview: '" + selectedMovie.getOverview() + "'"+'\n'+
+                    "Popularity: " + selectedMovie.getPopularity() +'\n'+
+                    "Release Date: '" + selectedMovie.getReleaseDate() + "'"+'\n'+
+                    "Video: " + selectedMovie.isVideo() +'\n'+
+                    "Vote Average: " + selectedMovie.getVoteAverage() +'\n'+
+                    "Vote Count: " + selectedMovie.getVoteCount());
+            alert.showAndWait();
+        }
+    }
+
+
+
 }
