@@ -54,7 +54,7 @@ public class AppController implements Initializable {
     private final int apiPagesPerUiPage = 10; // Nombre de pages de l'API chargées par page de l'UI
     private final int totalApiPages = 100; // Total des pages de l'API à charger
     private final int totalPagesUi = totalApiPages / apiPagesPerUiPage;
-    private List<Movie> allMovies = new ArrayList<>();
+    private Set<Movie> allMovies = new HashSet<>();
 
 
 
@@ -63,6 +63,7 @@ public class AppController implements Initializable {
         initializeGenreMap() ;
         genreComboBox.getItems().addAll(genreNameToIdMap.keySet());
         loadMovies();
+        fetchAllMovies();
 
 
         moviesListView.setCellFactory(param -> new ListCell<Movie>() {
@@ -164,11 +165,12 @@ public class AppController implements Initializable {
         int startApiPage = (currentUiPage - 1) * apiPagesPerUiPage + 1;
         for (int i = 0; i < apiPagesPerUiPage; i++) {
             int apiPage = startApiPage + i;
-            movies.addAll(fetchMovies(apiPage)); // Ajoutez les films de chaque page de l'API à la liste
+            movies.addAll(fetchMovies(apiPage));
         }
         moviesListView.getItems().setAll(movies);
         updateNavigationButtons();
     }
+
     public void fetchAllMovies() {
         OkHttpClient client = new OkHttpClient();
         ObjectMapper objectMapper = new ObjectMapper();
