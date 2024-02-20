@@ -42,16 +42,29 @@ public class AppController implements Initializable {
     private Button favoritesButton;
     @FXML
     private ListView<Movie> moviesListView;
+    @FXML
+    private Button prevPageButton;
+
+    @FXML
+    private Button nextPageButton;
+
 
     private Set<Movie> favoriteMovies = new HashSet<>();
+    private int currentUiPage = 1;
+    private final int apiPagesPerUiPage = 10; // Nombre de pages de l'API chargées par page de l'UI
+    private final int totalApiPages = 100; // Total des pages de l'API à charger
+    private final int totalPagesUi = totalApiPages / apiPagesPerUiPage;
+    private Set<Movie> allMovies = new HashSet<>();
+    private Map<String, Integer> genreNameToIdMap;
+
 
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        initializeGenreMap() ;
+        initializeGenreMap();
         genreComboBox.getItems().addAll(genreNameToIdMap.keySet());
         loadMovies();
-
+        fetchAllMovies();
 
         moviesListView.setCellFactory(param -> new ListCell<Movie>() {
             @Override
@@ -61,54 +74,53 @@ public class AppController implements Initializable {
                     setText(null);
                     setGraphic(null);
                 } else {
-                    // Initialize the container HBox with spacing and padding
                     HBox hBox = new HBox(10);
                     hBox.setAlignment(Pos.CENTER_LEFT);
                     hBox.setPadding(new Insets(5, 10, 5, 10));
 
-                    // Create a VBox for text elements
                     VBox vBoxText = new VBox(5);
                     Label titleLabel = new Label(movie.getTitle());
-                    Label yearLabel = new Label(movie.getReleaseDate().substring(0, 4));
+                    // Utiliser extractYear pour gérer la date de sortie
+                    String yearText = extractYearSafe(movie.getReleaseDate());
+                    Label yearLabel = new Label(yearText);
                     vBoxText.getChildren().addAll(titleLabel, yearLabel);
 
-                    // Generate the stars rating box
                     HBox starsBox = createStarsBox(movie.getVoteAverage());
 
-                    // Initialize the like button and set its action
                     Button likeButton = new Button();
+                    likeButton.setText(favoriteMovies.contains(movie) ? "Unlike" : "Like");
                     likeButton.setOnAction(event -> {
                         toggleFavorite(movie);
-                        // Immediately update the button text based on the new favorite status
                         likeButton.setText(favoriteMovies.contains(movie) ? "Unlike" : "Like");
-                        // This refresh call might be redundant if the like button's text is already updated
                         moviesListView.refresh();
                     });
 
-                    // Set the initial text of the like button based on whether the movie is a favorite
-                    likeButton.setText(favoriteMovies.contains(movie) ? "Unlike" : "Like");
-                    setOnMouseClicked(event -> {
-                        if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 1) {
-                            handleMovieClick();
-                        }
-                    });
-
-                    // Apply styles and set preferred widths for better UI consistency
                     titleLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px;");
                     yearLabel.setStyle("-fx-font-size: 12px;");
                     titleLabel.setPrefWidth(200);
                     yearLabel.setPrefWidth(200);
                     starsBox.setPrefWidth(100);
 
-                    // Assemble the cell's graphic layout
                     hBox.getChildren().addAll(vBoxText, starsBox, likeButton);
                     setGraphic(hBox);
+
+                    setOnMouseClicked(event -> {
+                        if (event.getClickCount() == 1 && (!isEmpty())) {
+                            handleMovieClick();
+                        }
+                    });
                 }
             }
-
         });
+    }
 
-    };
+    private String extractYearSafe(String releaseDate) {
+        if (releaseDate == null || releaseDate.length() < 4) {
+            return "1890";
+        }
+        return releaseDate.substring(0, 4); // Extraher et retourner l'année
+    }
+
 
 
 
@@ -141,8 +153,6 @@ public class AppController implements Initializable {
         }
         final Integer genreId = parsedGenreId;
 
-        List<Movie> allMovies = getAllTheMovies();
-
         return allMovies.stream()
                 .filter(movie -> name == null || name.isEmpty() || movie.getTitle().toLowerCase().contains(name.toLowerCase()))
                 .filter(movie -> genreId == null || Arrays.stream(movie.getGenreIds()).anyMatch(id -> id == genreId))
@@ -158,20 +168,26 @@ public class AppController implements Initializable {
                 })
                 .collect(Collectors.toList());
     }
-
     private void loadMovies() {
-        List<Movie> movies = getAllTheMovies(); // Retrieve the list of all movies
-        moviesListView.getItems().setAll(movies); // Add movies to the ListView
+        List<Movie> movies = new ArrayList<>();
+        // Calculez le numéro de la première page de l'API pour la page actuelle de l'UI
+        int startApiPage = (currentUiPage - 1) * apiPagesPerUiPage + 1;
+        for (int i = 0; i < apiPagesPerUiPage; i++) {
+            int apiPage = startApiPage + i;
+            movies.addAll(fetchMovies(apiPage));
+        }
+        moviesListView.getItems().setAll(movies);
+        updateNavigationButtons();
     }
 
-    public static List<Movie> getAllTheMovies()  {
-        List<Movie> allTheMovies = new ArrayList<>();
+    public void fetchAllMovies() {
         OkHttpClient client = new OkHttpClient();
         ObjectMapper objectMapper = new ObjectMapper();
+        allMovies.clear(); // Assurez-vous que la liste est vide avant de commencer le processus de récupération.
 
-        for (int pageNumber = 1; pageNumber < 20; pageNumber++) {
+        for (int page = 1; page <= totalApiPages; page++) {
             Request request = new Request.Builder()
-                    .url("https://api.themoviedb.org/3/movie/popular?language=en-US&page=" + pageNumber + "&api_key=b8f844e585235d0341ba72bbc763ead2")
+                    .url("https://api.themoviedb.org/3/movie/popular?language=en-US&page=" + page + "&api_key=b8f844e585235d0341ba72bbc763ead2")
                     .get()
                     .build();
 
@@ -179,26 +195,58 @@ public class AppController implements Initializable {
                 Response response = client.newCall(request).execute();
                 if (response.isSuccessful() && response.body() != null) {
                     String responseBody = response.body().string();
-                    JsonNode jsonNode = objectMapper.readTree(responseBody);
-                    JsonNode resultsNode = jsonNode.get("results");
+                    JsonNode rootNode = objectMapper.readTree(responseBody);
+                    JsonNode resultsNode = rootNode.path("results");
 
-                    for (JsonNode result : resultsNode) {
-                        Movie movie = objectMapper.treeToValue(result, Movie.class);
-                        allTheMovies.add(movie);
+                    for (JsonNode node : resultsNode) {
+                        Movie movie = objectMapper.treeToValue(node, Movie.class);
+                        allMovies.add(movie); // Accumulez les films de toutes les pages ici.
                     }
                 } else {
-                    System.out.println("Failed to get response from the API for page " + pageNumber); // Log en cas d'échec de la requête
+                    System.out.println("Failed to get response from the API for page " + page);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                // Il pourrait être judicieux d'introduire une certaine forme de gestion des erreurs ou de réessayer la logique ici.
             }
         }
-        return allTheMovies;
     }
 
 
 
-    private Map<String, Integer> genreNameToIdMap;
+    public List<Movie> fetchMovies(int page) {
+        List<Movie> moviesOnPage = new ArrayList<>();
+        OkHttpClient client = new OkHttpClient();
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        Request request = new Request.Builder()
+                .url("https://api.themoviedb.org/3/movie/popular?language=en-US&page=" + page + "&api_key=b8f844e585235d0341ba72bbc763ead2")
+                .get()
+                .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+            if (response.isSuccessful() && response.body() != null) {
+                String responseBody = response.body().string();
+                JsonNode rootNode = objectMapper.readTree(responseBody);
+                JsonNode resultsNode = rootNode.path("results");
+
+                for (JsonNode node : resultsNode) {
+                    Movie movie = objectMapper.treeToValue(node, Movie.class);
+                    moviesOnPage.add(movie);
+                }
+            } else {
+                System.out.println("Failed to get response from the API for page " + page);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return moviesOnPage;
+    }
+
+
+
 
     private void initializeGenreMap() {
         genreNameToIdMap = new HashMap<>();
@@ -232,16 +280,20 @@ public class AppController implements Initializable {
 
 
     private int extractYear(String releaseDate) {
-        // Assuming releaseDate is a String like "1999-12-31"
-        if (releaseDate != null && releaseDate.length() >= 4) {
-            try {
-                return Integer.parseInt(releaseDate.substring(0, 4));
-            } catch (NumberFormatException e) {
-                // Handle the error, perhaps return a default year or log an error.
-            }
+        if (releaseDate == null || releaseDate.isEmpty() || releaseDate.length() < 4) {
+            return 1800; // Retourne une année par défaut si la date de sortie n'est pas valide
         }
-        return -1; // Return an invalid year if the release date is not in the expected format.
+        try {
+            return Integer.parseInt(releaseDate.substring(0, 4));
+        } catch (NumberFormatException e) {
+            System.err.println("Erreur lors de l'extraction de l'année pour la date: " + releaseDate);
+            return -1; // Retourne une valeur d'année invalide en cas d'erreur
+        }
     }
+
+
+
+
 
 
 
@@ -314,4 +366,27 @@ public class AppController implements Initializable {
             alert.showAndWait();
         }
     }
+
+    @FXML
+    private void handlePrevPageAction() {
+        if (currentUiPage > 1) {
+            currentUiPage--;
+            loadMovies();
+        }
+    }
+
+    @FXML
+    private void handleNextPageAction() {
+        if (currentUiPage < totalPagesUi) {
+            currentUiPage++;
+            loadMovies();
+        }
+    }
+    private void updateNavigationButtons() {
+        prevPageButton.setDisable(currentUiPage <= 1);
+        nextPageButton.setDisable(currentUiPage >= totalPagesUi);
+    }
+
+
+
 }
