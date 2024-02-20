@@ -164,7 +164,7 @@ public class AppController implements Initializable {
         moviesListView.getItems().setAll(movies); // Add movies to the ListView
     }
 
-    public static List<Movie> getAllTheMovies() {
+    public static List<Movie> getAllTheMovies()  {
         List<Movie> allTheMovies = new ArrayList<>();
         OkHttpClient client = new OkHttpClient();
         ObjectMapper objectMapper = new ObjectMapper();
