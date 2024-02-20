@@ -3,6 +3,9 @@ package moviesapp.controller;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 
@@ -18,10 +21,15 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import moviesapp.Movie;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class AppController implements Initializable {
@@ -56,6 +64,7 @@ public class AppController implements Initializable {
     private final int totalPagesUi = totalApiPages / apiPagesPerUiPage;
     private Set<Movie> allMovies = new HashSet<>();
     private Map<String, Integer> genreNameToIdMap;
+    private String favoritesFilePath = "favorites.txt";
 
 
 
@@ -65,6 +74,7 @@ public class AppController implements Initializable {
         genreComboBox.getItems().addAll(genreNameToIdMap.keySet());
         loadMovies();
         fetchAllMovies();
+        loadFavorites();
 
         moviesListView.setCellFactory(param -> new ListCell<Movie>() {
             @Override
@@ -326,6 +336,7 @@ public class AppController implements Initializable {
             }
         }
         moviesListView.refresh(); // Rafraîchir la ListView pour refléter le changement
+        saveFavorites();
     }
 
 
@@ -342,7 +353,9 @@ public class AppController implements Initializable {
     @FXML
     private void restart(){
         favoriteMovies.clear();
+        moviesListView.getItems().clear();
         loadMovies();
+        clearFavoritesFile();
     }
     @FXML
     private void handleMovieClick() {
@@ -388,5 +401,51 @@ public class AppController implements Initializable {
     }
 
 
+    private void saveFavorites() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<String> jsonFavorites = favoriteMovies.stream().map(movie -> {
+            try {
+                return objectMapper.writeValueAsString(movie);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }).collect(Collectors.toList());
+
+        try {
+            Files.write(Paths.get(favoritesFilePath), jsonFavorites);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    private void loadFavorites() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        File file = new File(favoritesFilePath);
+        favoriteMovies.clear(); // Réinitialisez l'ensemble des favoris
+
+        if (file.exists()) {
+            try {
+                List<String> jsonFavorites = Files.readAllLines(Paths.get(favoritesFilePath));
+                for (String jsonFavorite : jsonFavorites) {
+                    try {
+                        Movie movie = objectMapper.readValue(jsonFavorite, Movie.class);
+                        favoriteMovies.add(movie);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void clearFavoritesFile() {
+        try (PrintWriter writer = new PrintWriter(favoritesFilePath, StandardCharsets.UTF_8)) {
+            // Écrire dans le fichier sans contenu le vide
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 }
