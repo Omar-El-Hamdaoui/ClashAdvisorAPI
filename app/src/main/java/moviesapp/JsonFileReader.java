@@ -31,7 +31,6 @@
                 for (JsonNode result : resultsNode) {
                     Movie movie = objectMapper.treeToValue(result, Movie.class);
                     thisIsAllMovies.add(movie);
-
                 }
                 for(Movie movie :thisIsAllMovies){
                     System.out.println(movie);

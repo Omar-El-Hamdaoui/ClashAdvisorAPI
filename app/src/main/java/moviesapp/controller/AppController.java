@@ -227,10 +227,6 @@ public class AppController implements Initializable {
 
 
 
-
-
-
-
     private HBox createStarsBox(double rating) {
         HBox starsBox = new HBox();
         starsBox.setSpacing(5);
