@@ -2,7 +2,7 @@ package moviesapp.controller;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.*;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -20,8 +20,6 @@ import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import moviesapp.Movie;
 
 import java.net.URL;
@@ -125,6 +123,7 @@ public class AppController implements Initializable {
 
                     hBox.getChildren().addAll(posterImageView, vBoxText, starsBox, likeButton);
                     setGraphic(hBox);
+
 
                     setOnMouseClicked(event -> {
                         if (event.getClickCount() == 1 && (!isEmpty())) {
@@ -416,12 +415,22 @@ public class AppController implements Initializable {
             // Définir la chaîne de caractères comme contenu du TextArea
             textArea.setText(movieDetails);
 
+            String backdropUrl = "https://image.tmdb.org/t/p/w500" + selectedMovie.getBackdropPath();
+
+            //textArea.setStyle("-fx-background-color: transparent; -fx-control-inner-background: transparent;");
 
             // Ajouter le VBox à la deuxième colonne du GridPane
             gridPane.add(textArea, 1, 0);
 
             // Ajouter le GridPane à la boîte de dialogue
             alert.getDialogPane().setContent(gridPane);
+            alert.getDialogPane().setStyle("-fx-background-color: transparent;");
+            alert.getDialogPane().setStyle(
+                    "-fx-background-image: url('"+backdropUrl+"');" +
+                            "-fx-background-size: cover;" +
+                            "-fx-background-repeat: no-repeat;" +
+                            "-fx-background-position: center;"
+            );
 
             // Afficher la boîte de dialogue
             alert.showAndWait();
