@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
 
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="moviesapp.controller.AppController" prefHeight="600.0" prefWidth="800.0">
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="moviesapp.controller.AppController" prefHeight="600.0" prefWidth="800.0" stylesheets="@style.css">
     <left>
         <VBox spacing="10" style="-fx-padding: 10;" BorderPane.alignment="CENTER">
             <Label text="FILTERS:"/>

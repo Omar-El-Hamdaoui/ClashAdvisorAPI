@@ -1,0 +1,28 @@
+.root {
+  -fx-font-family: "Arial";
+  -fx-base: #FFFFFF;
+}
+
+.button {
+  -fx-background-color: #ABD8ED;
+  -fx-text-fill: #000000;
+}
+
+.label {
+  -fx-text-fill: #333333;
+}
+
+.text-field {
+  -fx-background-color: #FFFFFF;
+  -fx-border-color: #ABD8ED;
+}
+
+.list-view {
+  -fx-background-insets: 0;
+  -fx-padding: 5;
+}
+
+.list-cell {
+  -fx-border-color: transparent;
+  -fx-padding: 10;
+}
