@@ -388,14 +388,13 @@ public class AppController implements Initializable {
             textArea.setWrapText(true); // Permettre le retour à la ligne automatique
 
             // Construire une chaîne de caractères avec toutes les informations du film
-            String movieDetails = "Adult: " + selectedMovie.isAdult() +'\n'+
+            String movieDetails =
                     "Id: " + selectedMovie.getId() +'\n'+
                     "Original Language:  " + selectedMovie.getOriginalLanguage() +'\n'+
                     "Original Title:  " + selectedMovie.getOriginalTitle() +'\n'+
                     "Overview:  " + selectedMovie.getOverview() +'\n'+
                     "Popularity: " + selectedMovie.getPopularity() +'\n'+
-                    "Release Date: '" + selectedMovie.getReleaseDate() + "'"+'\n'+
-                    "Video: " + selectedMovie.isVideo() +'\n'+
+                    "Release Date:  " + selectedMovie.getReleaseDate() +'\n'+
                     "Vote Average: " + selectedMovie.getVoteAverage() +'\n'+
                     "Vote Count: " + selectedMovie.getVoteCount();
 
