@@ -91,10 +91,8 @@ public class AppController implements Initializable {
                     hBox.setAlignment(Pos.CENTER_LEFT);
                     hBox.setPadding(new Insets(5, 10, 5, 10));
 
-
                     VBox vBoxText = new VBox(5);
                     Label titleLabel = new Label(movie.getTitle());
-                    // Utiliser extractYear pour gérer la date de sortie
                     String yearText = extractYearSafe(movie.getReleaseDate());
                     Label yearLabel = new Label(yearText);
                     vBoxText.getChildren().addAll(titleLabel, yearLabel);
@@ -115,15 +113,11 @@ public class AppController implements Initializable {
                     yearLabel.setPrefWidth(200);
                     starsBox.setPrefWidth(120);
 
-                    hBox.getChildren().addAll(poster(movie,110), vBoxText, starsBox, likeButton);
-                    setGraphic(hBox);
+                    Pane spacer = new Pane();
+                    HBox.setHgrow(spacer, Priority.ALWAYS); // This will push everything to the right
 
-                    moviesListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-                    // Gestionnaire d'événements pour détecter les clics sur un élément de la liste
-                    moviesListView.setOnMouseClicked(event -> {
-                        if (event.getClickCount() == 1) {
-                            handleMovieClick();
-                        }});
+                    hBox.getChildren().addAll(poster(movie,110), vBoxText, starsBox, spacer, likeButton); // Notice the spacer before likeButton
+                    setGraphic(hBox);
                 }
             }
         });
