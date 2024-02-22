@@ -1,20 +1,22 @@
 package moviesapp.controller;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import javafx.concurrent.Task;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javafx.scene.input.MouseButton;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
@@ -24,14 +26,14 @@ import moviesapp.Movie;
 
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.type.TypeReference;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.Collectors;
+
+
 
 public class AppController implements Initializable {
 
@@ -89,14 +91,6 @@ public class AppController implements Initializable {
                     hBox.setAlignment(Pos.CENTER_LEFT);
                     hBox.setPadding(new Insets(5, 10, 5, 10));
 
-                    // Create ImageView for movie poster
-                    ImageView posterImageView = new ImageView();
-                    posterImageView.setFitWidth(100); // Adjust width as needed
-                    posterImageView.setPreserveRatio(true);
-
-                    // Load and set the poster image
-                    Image posterImage = new Image("https://image.tmdb.org/t/p/w500" + movie.getPosterPath());
-                    posterImageView.setImage(posterImage);
 
                     VBox vBoxText = new VBox(5);
                     Label titleLabel = new Label(movie.getTitle());
@@ -119,17 +113,17 @@ public class AppController implements Initializable {
                     yearLabel.setStyle("-fx-font-size: 12px;");
                     titleLabel.setPrefWidth(200);
                     yearLabel.setPrefWidth(200);
-                    starsBox.setPrefWidth(100);
+                    starsBox.setPrefWidth(120);
 
-                    hBox.getChildren().addAll(posterImageView, vBoxText, starsBox, likeButton);
+                    hBox.getChildren().addAll(poster(movie,110), vBoxText, starsBox, likeButton);
                     setGraphic(hBox);
 
-
-                    setOnMouseClicked(event -> {
-                        if (event.getClickCount() == 1 && (!isEmpty())) {
+                    moviesListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+                    // Gestionnaire d'événements pour détecter les clics sur un élément de la liste
+                    moviesListView.setOnMouseClicked(event -> {
+                        if (event.getClickCount() == 1) {
                             handleMovieClick();
-                        }
-                    });
+                        }});
                 }
             }
         });
@@ -382,19 +376,12 @@ public class AppController implements Initializable {
             GridPane gridPane = new GridPane();
             gridPane.setHgap(10); // Espacement horizontal entre les éléments
             gridPane.setVgap(5); // Espacement vertical entre les éléments
-
-            // Créer une ImageView pour afficher l'image du poster
-            ImageView imageView = new ImageView();
-            imageView.setFitWidth(200); // Largeur de l'image
-            imageView.setPreserveRatio(true); // Conserver le ratio de l'image
-
-            // Charger et définir l'image du poster
-            String posterUrl = "https://image.tmdb.org/t/p/w500" + selectedMovie.getPosterPath(); // Construire l'URL du poster
-            Image image = new Image(posterUrl);
-            imageView.setImage(image);
+            // Ajoutez ces lignes pour ajuster la taille de la boîte de dialogue
+            gridPane.setMinSize(800, 400); // Taille minimale
+            gridPane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE); // Taille maximale
 
             // Ajouter l'image à la première colonne du GridPane
-            gridPane.add(imageView, 0, 0);
+            gridPane.add(poster(selectedMovie, 250), 2, 0);
 
             TextArea textArea = new TextArea();
             textArea.setEditable(false); // Rendre le TextArea en lecture seule
@@ -402,10 +389,10 @@ public class AppController implements Initializable {
 
             // Construire une chaîne de caractères avec toutes les informations du film
             String movieDetails = "Adult: " + selectedMovie.isAdult() +'\n'+
-                    "Id: " + selectedMovie.getId() + ","+'\n'+
-                    "Original Language: '" + selectedMovie.getOriginalLanguage() + "'"+'\n'+
-                    "Original Title: '" + selectedMovie.getOriginalTitle() + "'"+'\n'+
-                    "Overview: '" + selectedMovie.getOverview() + "'"+'\n'+
+                    "Id: " + selectedMovie.getId() +'\n'+
+                    "Original Language:  " + selectedMovie.getOriginalLanguage() +'\n'+
+                    "Original Title:  " + selectedMovie.getOriginalTitle() +'\n'+
+                    "Overview:  " + selectedMovie.getOverview() +'\n'+
                     "Popularity: " + selectedMovie.getPopularity() +'\n'+
                     "Release Date: '" + selectedMovie.getReleaseDate() + "'"+'\n'+
                     "Video: " + selectedMovie.isVideo() +'\n'+
@@ -417,14 +404,11 @@ public class AppController implements Initializable {
 
             String backdropUrl = "https://image.tmdb.org/t/p/w500" + selectedMovie.getBackdropPath();
 
-            //textArea.setStyle("-fx-background-color: transparent; -fx-control-inner-background: transparent;");
-
             // Ajouter le VBox à la deuxième colonne du GridPane
-            gridPane.add(textArea, 1, 0);
+            gridPane.add(textArea, 3, 0);
 
             // Ajouter le GridPane à la boîte de dialogue
             alert.getDialogPane().setContent(gridPane);
-            alert.getDialogPane().setStyle("-fx-background-color: transparent;");
             alert.getDialogPane().setStyle(
                     "-fx-background-image: url('"+backdropUrl+"');" +
                             "-fx-background-size: cover;" +
@@ -436,6 +420,47 @@ public class AppController implements Initializable {
             alert.showAndWait();
         }
     }
+
+    private void setPosterAsync(Movie movie, ImageView imageView, int width) {
+        Task<Image> loadImageTask = new Task<>() {
+            @Override
+            protected Image call() throws Exception {
+                // Charger l'image depuis l'URL
+                String posterUrl = "https://image.tmdb.org/t/p/w500" + movie.getPosterPath();
+                return new Image(posterUrl);
+            }
+        };
+
+        loadImageTask.setOnSucceeded(event -> {
+            Image posterImage = loadImageTask.getValue();
+            imageView.setImage(posterImage);
+        });
+
+        new Thread(loadImageTask).start();
+    }
+
+    private ImageView poster(Movie movie, int width) {
+        ImageView imageView = new ImageView();
+        imageView.setFitWidth(width); // Largeur de l'image
+        imageView.setPreserveRatio(true); // Conserver le ratio de l'image
+
+        // Utiliser le cache d'images pour éviter de recharger les mêmes images plusieurs fois
+        Cache<String, Image> imageCache = Caffeine.newBuilder()
+                .maximumSize(100) // Limite le nombre d'images en cache
+                .expireAfterWrite(10, TimeUnit.MINUTES) // Définit la durée de vie de chaque image en cache
+                .build();
+
+        String posterUrl = "https://image.tmdb.org/t/p/w500" + movie.getPosterPath();
+        Image cachedImage = imageCache.getIfPresent(posterUrl);
+        if (cachedImage != null) {
+            imageView.setImage(cachedImage);
+        } else {
+            // Si l'image n'est pas en cache, la charger de manière asynchrone
+            setPosterAsync(movie, imageView, width);
+        }
+        return imageView;
+    }
+
 
     @FXML
     private void handlePrevPageAction() {
