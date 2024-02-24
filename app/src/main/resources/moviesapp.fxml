@@ -36,8 +36,11 @@
 
         </VBox>
     </left>
-    <center>
-        <ListView fx:id="moviesListView" BorderPane.alignment="CENTER"/>
 
+    <center>
+        <AnchorPane fx:id="centerAnchorPane" BorderPane.alignment="CENTER">
+            <ListView fx:id="moviesListView" AnchorPane.topAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0"/>
+        </AnchorPane>
     </center>
+
 </BorderPane>

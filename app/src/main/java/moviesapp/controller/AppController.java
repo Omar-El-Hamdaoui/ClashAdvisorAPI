@@ -82,6 +82,7 @@ public class AppController implements Initializable {
         moviesListView.setCellFactory(param -> new ListCell<Movie>() {
             @Override
             protected void updateItem(Movie movie, boolean empty) {
+
                 super.updateItem(movie, empty);
                 if (empty || movie == null) {
                     setText(null);
@@ -93,44 +94,46 @@ public class AppController implements Initializable {
 
                     VBox vBoxText = new VBox(5);
                     Label titleLabel = new Label(movie.getTitle());
-                    String yearText = extractYearSafe(movie.getReleaseDate());
-                    Label yearLabel = new Label(yearText);
+                    Label yearLabel = new Label(extractYearSafe(movie.getReleaseDate()));
                     vBoxText.getChildren().addAll(titleLabel, yearLabel);
 
                     HBox starsBox = createStarsBox(movie.getVoteAverage());
-                    starsBox.setPrefWidth(120);
 
-                    Button likeButton = new Button();
-                    likeButton.setText(favoriteMovies.contains(movie) ? "Unlike" : "Like");
+                    Button likeButton = new Button(favoriteMovies.contains(movie) ? "Unlike" : "Like");
                     likeButton.setOnAction(event -> {
                         toggleFavorite(movie);
                         likeButton.setText(favoriteMovies.contains(movie) ? "Unlike" : "Like");
                         moviesListView.refresh();
                     });
 
+                    // Bind the width of the title and year labels to the width of the ListView minus some padding
+                    titleLabel.maxWidthProperty().bind(moviesListView.widthProperty().multiply(0.3)); // 30% of list view width
+                    yearLabel.maxWidthProperty().bind(moviesListView.widthProperty().multiply(0.1)); // 10% of list view width
+
+
                     titleLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px;");
                     yearLabel.setStyle("-fx-font-size: 12px;");
-                    titleLabel.setPrefWidth(200);
-                    yearLabel.setPrefWidth(200);
 
-                    Pane spacer = new Pane();
-                    HBox.setHgrow(spacer, Priority.ALWAYS); // This will push the starsBox and likeButton to the right
+                    Region spacer = new Region();
+                    HBox.setHgrow(spacer, Priority.ALWAYS);
+
+                    ImageView posterView = poster(movie, 110);
+                    HBox.setHgrow(posterView, Priority.NEVER); // Ensure the poster doesn't grow
 
                     hBox.getChildren().addAll(poster(movie, 110), vBoxText, spacer, starsBox, likeButton);
+                    HBox.setHgrow(spacer, Priority.ALWAYS); // Grow the spacer to push everything else to the right
+                    HBox.setHgrow(vBoxText, Priority.SOMETIMES);
+
                     setGraphic(hBox);
-
-                    // Set selection mode outside of the updateItem method, as it needs to be set only once
-                     moviesListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-
-                    // Set mouse click event outside of the updateItem method, as it needs to be set only once
-                     moviesListView.setOnMouseClicked(event -> {
-                         if (event.getClickCount() == 1) {
-                             handleMovieClick();
-                         }
-                     });
                 }
-            }
 
+                // Set mouse click event outside of the updateItem method, as it needs to be set only once
+                moviesListView.setOnMouseClicked(event -> {
+                    if (event.getClickCount() == 1) {
+                        handleMovieClick();
+                    }
+                });
+            }
         });
     }
 
