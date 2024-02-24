@@ -416,58 +416,73 @@ public class AppController implements Initializable {
     private void handleMovieClick() {
         Movie selectedMovie = moviesListView.getSelectionModel().getSelectedItem();
         if (selectedMovie != null) {
+            // Create a new custom dialog
+            Dialog<Void> dialog = new Dialog<>();
+            dialog.setTitle("Movie Details");
 
-            // Créer une nouvelle boîte de dialogue d'information
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Details du film");
-            alert.setHeaderText(selectedMovie.getTitle());
+            // Set the dialog background to black
+            dialog.getDialogPane().setStyle("-fx-background-color: black;");
 
-            // Créer un GridPane pour organiser l'affichage
+            // Remove default icon (information icon)
+            dialog.setGraphic(null);
+
+            // Set the header with movie title
+            HBox headerBox = new HBox();
+            Label titleLabel = new Label(selectedMovie.getTitle());
+            titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;");
+            headerBox.getChildren().add(titleLabel);
+            headerBox.setStyle("-fx-background-color: #37474F; -fx-padding: 10;");
+            dialog.getDialogPane().setHeader(headerBox);
+
+            // Set content grid pane
             GridPane gridPane = new GridPane();
-            gridPane.setHgap(10); // Espacement horizontal entre les éléments
-            gridPane.setVgap(5); // Espacement vertical entre les éléments
-            // Ajoutez ces lignes pour ajuster la taille de la boîte de dialogue
-            gridPane.setMinSize(800, 400); // Taille minimale
-            gridPane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE); // Taille maximale
+            gridPane.setStyle("-fx-background-color: black;"); // Set grid pane background to black
+            gridPane.setHgap(10);
+            gridPane.setVgap(10);
 
-            // Ajouter l'image à la première colonne du GridPane
-            gridPane.add(poster(selectedMovie, 250), 2, 0);
+            // TextArea for movie details (on the left/red side)
+            TextArea textArea = new TextArea(getMovieDetails(selectedMovie));
+            textArea.setEditable(false);
+            textArea.setWrapText(true);
+            textArea.setStyle("-fx-control-inner-background: black; -fx-text-fill: white; -fx-opacity: 1;");
+            gridPane.add(textArea, 0, 0);
 
-            TextArea textArea = new TextArea();
-            textArea.setEditable(false); // Rendre le TextArea en lecture seule
-            textArea.setWrapText(true); // Permettre le retour à la ligne automatique
+            // Poster ImageView (on the right/blue side) with 50% transparency
+            ImageView posterView = new ImageView(new Image(selectedMovie.getPosterPath()));
+            posterView.setStyle("-fx-opacity: 0.5;");
+            gridPane.add(posterView, 1, 0);
 
-            // Construire une chaîne de caractères avec toutes les informations du film
-            String movieDetails =
-                    "Id: " + selectedMovie.getId() +'\n'+
-                    "Original Language:  " + selectedMovie.getOriginalLanguage() +'\n'+
-                    "Original Title:  " + selectedMovie.getOriginalTitle() +'\n'+
-                    "Overview:  " + selectedMovie.getOverview() +'\n'+
-                    "Popularity: " + selectedMovie.getPopularity() +'\n'+
-                    "Release Date:  " + selectedMovie.getReleaseDate() +'\n'+
-                    "Vote Average: " + selectedMovie.getVoteAverage() +'\n'+
-                    "Vote Count: " + selectedMovie.getVoteCount();
-
-            // Définir la chaîne de caractères comme contenu du TextArea
-            textArea.setText(movieDetails);
-
+            // Background movie image (behind everything/black area)
             String backdropUrl = "https://image.tmdb.org/t/p/w500" + selectedMovie.getBackdropPath();
+            ImageView backgroundImageView = new ImageView(new Image(backdropUrl));
+            backgroundImageView.setFitWidth(800);
+            backgroundImageView.setPreserveRatio(true);
+            backgroundImageView.setStyle("-fx-opacity: 0.5;"); // 50% Transparency
 
-            // Ajouter le VBox à la deuxième colonne du GridPane
-            gridPane.add(textArea, 3, 0);
+            // StackPane for layering image behind the GridPane
+            StackPane stackPane = new StackPane();
+            stackPane.getChildren().addAll(backgroundImageView, gridPane);
 
-            // Ajouter le GridPane à la boîte de dialogue
-            alert.getDialogPane().setContent(gridPane);
-            alert.getDialogPane().setStyle(
-                    "-fx-background-image: url('"+backdropUrl+"');" +
-                            "-fx-background-size: cover;" +
-                            "-fx-background-repeat: no-repeat;" +
-                            "-fx-background-position: center;"
-            );
+            dialog.getDialogPane().setContent(stackPane);
 
-            // Afficher la boîte de dialogue
-            alert.showAndWait();
+            // Add a button to close the dialog
+            ButtonType closeButton = new ButtonType("Close", ButtonBar.ButtonData.OK_DONE);
+            dialog.getDialogPane().getButtonTypes().add(closeButton);
+
+            dialog.showAndWait();
         }
+    }
+
+
+    private String getMovieDetails(Movie movie) {
+        return "Id: " + movie.getId() + '\n' +
+                "Original Language:  " + movie.getOriginalLanguage() + '\n' +
+                "Original Title:  " + movie.getOriginalTitle() + '\n' +
+                "Overview:  " + movie.getOverview() + '\n' +
+                "Popularity: " + movie.getPopularity() + '\n' +
+                "Release Date:  " + movie.getReleaseDate() + '\n' +
+                "Vote Average: " + movie.getVoteAverage() + '\n' +
+                "Vote Count: " + movie.getVoteCount();
     }
 
 
