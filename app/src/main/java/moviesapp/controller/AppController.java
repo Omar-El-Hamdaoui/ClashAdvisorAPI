@@ -98,6 +98,7 @@ public class AppController implements Initializable {
                     vBoxText.getChildren().addAll(titleLabel, yearLabel);
 
                     HBox starsBox = createStarsBox(movie.getVoteAverage());
+                    starsBox.setPrefWidth(120);
 
                     Button likeButton = new Button();
                     likeButton.setText(favoriteMovies.contains(movie) ? "Unlike" : "Like");
@@ -111,15 +112,25 @@ public class AppController implements Initializable {
                     yearLabel.setStyle("-fx-font-size: 12px;");
                     titleLabel.setPrefWidth(200);
                     yearLabel.setPrefWidth(200);
-                    starsBox.setPrefWidth(120);
 
                     Pane spacer = new Pane();
-                    HBox.setHgrow(spacer, Priority.ALWAYS); // This will push everything to the right
+                    HBox.setHgrow(spacer, Priority.ALWAYS); // This will push the starsBox and likeButton to the right
 
-                    hBox.getChildren().addAll(poster(movie,110), vBoxText, starsBox, spacer, likeButton); // Notice the spacer before likeButton
+                    hBox.getChildren().addAll(poster(movie, 110), vBoxText, spacer, starsBox, likeButton);
                     setGraphic(hBox);
+
+                    // Set selection mode outside of the updateItem method, as it needs to be set only once
+                     moviesListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+
+                    // Set mouse click event outside of the updateItem method, as it needs to be set only once
+                     moviesListView.setOnMouseClicked(event -> {
+                         if (event.getClickCount() == 1) {
+                             handleMovieClick();
+                         }
+                     });
                 }
             }
+
         });
     }
 
@@ -312,7 +323,7 @@ public class AppController implements Initializable {
         starsBox.setAlignment(Pos.CENTER);
         for (int i = 1; i <= 5; i++) {
             Label starLabel = new Label();
-            if (i <= rating) {
+            if (i <= Math.floor(rating/2)) {
                 starLabel.setText("\u2605"); // Unicode solid star
             } else {
                 starLabel.setText("\u2606"); // Unicode outline star
