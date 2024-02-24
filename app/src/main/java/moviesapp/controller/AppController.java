@@ -34,6 +34,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+
+
 
 
 public class AppController implements Initializable {
@@ -61,6 +65,7 @@ public class AppController implements Initializable {
     private Button nextPageButton;
 
 
+
     private Set<Movie> favoriteMovies = new HashSet<>();
     private int currentUiPage = 1;
     private final int apiPagesPerUiPage = 1; // Nombre de pages de l'API chargées par page de l'UI
@@ -69,6 +74,8 @@ public class AppController implements Initializable {
     private Set<Movie> allMovies = new HashSet<>();
     private Map<String, Integer> genreNameToIdMap;
     private String favoritesFilePath = "favorites.txt";
+    private static final int NUMBER_OF_THREADS = 4; // Adjust based on your needs and system capabilities
+    private final ExecutorService executorService = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
 
 
