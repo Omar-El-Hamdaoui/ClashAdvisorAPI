@@ -3,6 +3,7 @@ package moviesapp.controller;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import javafx.concurrent.Task;
+import javafx.geometry.HPos;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -420,9 +421,6 @@ public class AppController implements Initializable {
             Dialog<Void> dialog = new Dialog<>();
             dialog.setTitle("Movie Details");
 
-            // Set the dialog background to black
-            dialog.getDialogPane().setStyle("-fx-background-color: black;");
-
             // Remove default icon (information icon)
             dialog.setGraphic(null);
 
@@ -434,44 +432,61 @@ public class AppController implements Initializable {
             headerBox.setStyle("-fx-background-color: #37474F; -fx-padding: 10;");
             dialog.getDialogPane().setHeader(headerBox);
 
-            // Set content grid pane
+            // Create the GridPane for layout
             GridPane gridPane = new GridPane();
-            gridPane.setStyle("-fx-background-color: black;"); // Set grid pane background to black
+            gridPane.setStyle("-fx-background-color: transparent;");
             gridPane.setHgap(10);
             gridPane.setVgap(10);
 
-            // TextArea for movie details (on the left/red side)
+            // TextArea for movie details (now on the right side)
             TextArea textArea = new TextArea(getMovieDetails(selectedMovie));
             textArea.setEditable(false);
             textArea.setWrapText(true);
-            textArea.setStyle("-fx-control-inner-background: black; -fx-text-fill: white; -fx-opacity: 1;");
-            gridPane.add(textArea, 0, 0);
+            textArea.setStyle("-fx-background-color: rgba(255, 255, 255, 1); -fx-text-fill: black;");
 
-            // Poster ImageView (on the right/blue side) with 50% transparency
-            ImageView posterView = new ImageView(new Image(selectedMovie.getPosterPath()));
-            posterView.setStyle("-fx-opacity: 0.5;");
-            gridPane.add(posterView, 1, 0);
+            // ImageView for the poster (on the left side)
+            ImageView posterView = new ImageView();
+            posterView.setPreserveRatio(true);
+            posterView.setFitHeight(300); // Adjust the height as needed
 
-            // Background movie image (behind everything/black area)
-            String backdropUrl = "https://image.tmdb.org/t/p/w500" + selectedMovie.getBackdropPath();
-            ImageView backgroundImageView = new ImageView(new Image(backdropUrl));
-            backgroundImageView.setFitWidth(800);
-            backgroundImageView.setPreserveRatio(true);
-            backgroundImageView.setStyle("-fx-opacity: 0.5;"); // 50% Transparency
+            try {
+                // Load the poster image
+                String posterPath = selectedMovie.getPosterPath();
+                if (posterPath != null && !posterPath.isEmpty()) {
+                    String posterUrl = "https://image.tmdb.org/t/p/w500" + posterPath;
+                    Image posterImage = new Image(posterUrl, true);
+                    posterView.setImage(posterImage);
+                }
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+                // Handle the error here, maybe show an error message to the user
+            }
 
-            // StackPane for layering image behind the GridPane
-            StackPane stackPane = new StackPane();
-            stackPane.getChildren().addAll(backgroundImageView, gridPane);
+            // Add elements to the grid
+            gridPane.add(posterView, 0, 0); // Add poster to the left side
+            gridPane.add(textArea, 1, 0); // Add text area to the right side
 
-            dialog.getDialogPane().setContent(stackPane);
+            // Make sure that the gridPane is expanded to the full width of the dialog
+            gridPane.setMaxWidth(Double.MAX_VALUE);
+            GridPane.setHgrow(posterView, Priority.ALWAYS); // Allow poster to grow horizontally
+            GridPane.setVgrow(posterView, Priority.ALWAYS); // Allow poster to grow vertically
+            GridPane.setHgrow(textArea, Priority.ALWAYS); // Allow text area to grow horizontally
+            GridPane.setVgrow(textArea, Priority.ALWAYS); // Allow text area to grow vertically
+
+            // Dialog pane settings
+            dialog.getDialogPane().setContent(gridPane);
+            dialog.getDialogPane().setStyle("-fx-background-color: black;");
 
             // Add a button to close the dialog
             ButtonType closeButton = new ButtonType("Close", ButtonBar.ButtonData.OK_DONE);
             dialog.getDialogPane().getButtonTypes().add(closeButton);
 
+            // Show the custom dialog
             dialog.showAndWait();
         }
     }
+
+
 
 
     private String getMovieDetails(Movie movie) {
@@ -494,6 +509,7 @@ public class AppController implements Initializable {
             protected Image call() throws Exception {
                 // Charger l'image depuis l'URL
                 String posterUrl = "https://image.tmdb.org/t/p/w500" + movie.getPosterPath();
+
                 return new Image(posterUrl);
             }
         };
@@ -518,6 +534,7 @@ public class AppController implements Initializable {
                 .build();
 
         String posterUrl = "https://image.tmdb.org/t/p/w500" + movie.getPosterPath();
+
         Image cachedImage = imageCache.getIfPresent(posterUrl);
         if (cachedImage != null) {
             imageView.setImage(cachedImage);
