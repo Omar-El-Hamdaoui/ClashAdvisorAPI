@@ -416,6 +416,7 @@ public class AppController implements Initializable {
     private void handleMovieClick() {
         Movie selectedMovie = moviesListView.getSelectionModel().getSelectedItem();
         if (selectedMovie != null) {
+
             // Créer une nouvelle boîte de dialogue d'information
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Details du film");
@@ -468,6 +469,9 @@ public class AppController implements Initializable {
             alert.showAndWait();
         }
     }
+
+
+
 
     private void setPosterAsync(Movie movie, ImageView imageView, int width) {
         Task<Image> loadImageTask = new Task<>() {

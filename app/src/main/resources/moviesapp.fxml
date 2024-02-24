@@ -5,8 +5,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="moviesapp.controller.AppController" prefHeight="600.0" prefWidth="800.0" stylesheets="@style.css">
     <left>
-        <VBox spacing="10" style="-fx-padding: 10;" BorderPane.alignment="CENTER">
-            <Label text="FILTERS:"/>
+        <VBox  fx:id="leftVBox" styleClass="sidebar" BorderPane.alignment="CENTER">
             <HBox spacing="5" alignment="CENTER_LEFT">
                 <Label text="Title:"/>
                 <TextField fx:id="nameField" prefWidth="150"/>
@@ -32,7 +31,7 @@
             <Button fx:id="prevPageButton" text="Prev" maxWidth="Infinity" onAction="#handlePrevPageAction"/>
             <Button fx:id="nextPageButton" text="Next" maxWidth="Infinity" onAction="#handleNextPageAction"/>
 
-
+            <VBox.vgrow>ALWAYS</VBox.vgrow>
 
         </VBox>
     </left>
@@ -42,5 +41,6 @@
             <ListView fx:id="moviesListView" AnchorPane.topAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0"/>
         </AnchorPane>
     </center>
+
 
 </BorderPane>
