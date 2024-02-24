@@ -74,7 +74,9 @@ public class AppController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         initializeGenreMap();
+        genreComboBox.getItems().add("None");
         genreComboBox.getItems().addAll(genreNameToIdMap.keySet());
+        genreComboBox.setValue("None");
         loadMovies();
         fetchAllMovies();
         loadFavorites();
@@ -159,7 +161,7 @@ public class AppController implements Initializable {
         moviesListView.getItems().setAll(filteredMovies);
     }
 
-    private List<Movie> searchMovies(String name, String fromYear, String toYear, String genreName, String ratingString) {
+    /*private List<Movie> searchMovies(String name, String fromYear, String toYear, String genreName, String ratingString) {
         double parsedRating = 0;
         if (ratingString != null && !ratingString.isEmpty()) {
             try {
@@ -190,7 +192,46 @@ public class AppController implements Initializable {
                     return true;
                 })
                 .collect(Collectors.toList());
+    }*/
+
+    private List<Movie> searchMovies(String name, String fromYear, String toYear, String genreName, String ratingString) {
+        double parsedRating = 0;
+        if (ratingString != null && !ratingString.isEmpty()) {
+            try {
+                parsedRating = Double.parseDouble(ratingString);
+            } catch (NumberFormatException e) {
+                // Handle the case where the rating is not a valid double
+            }
+        }
+        final double rating = parsedRating; // Make rating effectively final
+
+        // Make genreId effectively final by not modifying it after initialization
+        final Integer genreId = (genreName != null && !genreName.equals("None"))
+                ? getGenreIdByName(genreName)
+                : null;
+
+
+        // Since fromYear and toYear are used in a lambda expression, they must be effectively final
+        final String finalFromYear = fromYear;
+        final String finalToYear = toYear;
+
+        return allMovies.stream()
+                .filter(movie -> name == null || name.isEmpty() || movie.getTitle().toLowerCase().contains(name.toLowerCase()))
+                .filter(movie -> genreId == null || Arrays.stream(movie.getGenreIds()).anyMatch(id -> id == genreId))
+                .filter(movie -> rating == 0 || movie.getVoteAverage() >= rating)
+                .filter(movie -> {
+                    if (finalFromYear != null && !finalFromYear.isEmpty() && finalToYear != null && !finalToYear.isEmpty()) {
+                        int year = extractYear(movie.getReleaseDate());
+                        int from = Integer.parseInt(finalFromYear);
+                        int to = Integer.parseInt(finalToYear);
+                        return year >= from && year <= to;
+                    }
+                    return true;
+                })
+                .collect(Collectors.toList());
     }
+
+
     private void loadMovies() {
         List<Movie> movies = new ArrayList<>();
         // Calculez le numéro de la première page de l'API pour la page actuelle de l'UI
