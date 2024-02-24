@@ -2,6 +2,7 @@ package moviesapp.controller;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.geometry.HPos;
 import javafx.scene.image.Image;
@@ -480,22 +481,21 @@ public class AppController implements Initializable {
 
 
     private void setPosterAsync(Movie movie, ImageView imageView, int width) {
-        Task<Image> loadImageTask = new Task<>() {
-            @Override
-            protected Image call() throws Exception {
-                // Charger l'image depuis l'URL
+        Runnable loadImageTask = () -> {
+            try {
+                // Load the image from URL
                 String posterUrl = "https://image.tmdb.org/t/p/w500" + movie.getPosterPath();
-
-                return new Image(posterUrl);
+                Image posterImage = new Image(posterUrl, true); // true to load in background
+                // Use Platform.runLater to update the UI components on the JavaFX Application Thread
+                Platform.runLater(() -> imageView.setImage(posterImage));
+            } catch (Exception e) {
+                e.printStackTrace();
+                // Handle exceptions, possibly set a default image in case of error
             }
         };
 
-        loadImageTask.setOnSucceeded(event -> {
-            Image posterImage = loadImageTask.getValue();
-            imageView.setImage(posterImage);
-        });
-
-        new Thread(loadImageTask).start();
+        // Submit the task to the executor
+        executorService.submit(loadImageTask);
     }
 
     private ImageView poster(Movie movie, int width) {
