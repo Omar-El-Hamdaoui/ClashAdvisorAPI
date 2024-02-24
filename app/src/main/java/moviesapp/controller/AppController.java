@@ -162,39 +162,6 @@ public class AppController implements Initializable {
         moviesListView.getItems().setAll(filteredMovies);
     }
 
-    /*private List<Movie> searchMovies(String name, String fromYear, String toYear, String genreName, String ratingString) {
-        double parsedRating = 0;
-        if (ratingString != null && !ratingString.isEmpty()) {
-            try {
-                parsedRating = Double.parseDouble(ratingString);
-            } catch (NumberFormatException e) {
-                // Handle the case where the rating is not a valid double
-            }
-        }
-        final double rating = parsedRating;
-
-        Integer parsedGenreId = null;
-        if (genreName != null && !genreName.isEmpty()) {
-            parsedGenreId = getGenreIdByName(genreName);
-        }
-        final Integer genreId = parsedGenreId;
-
-        return allMovies.stream()
-                .filter(movie -> name == null || name.isEmpty() || movie.getTitle().toLowerCase().contains(name.toLowerCase()))
-                .filter(movie -> genreId == null || Arrays.stream(movie.getGenreIds()).anyMatch(id -> id == genreId))
-                .filter(movie -> rating == 0 || movie.getVoteAverage() >= rating)
-                .filter(movie -> {
-                    if (fromYear != null && !fromYear.isEmpty() && toYear != null && !toYear.isEmpty()) {
-                        int year = extractYear(movie.getReleaseDate());
-                        int from = Integer.parseInt(fromYear);
-                        int to = Integer.parseInt(toYear);
-                        return year >= from && year <= to;
-                    }
-                    return true;
-                })
-                .collect(Collectors.toList());
-    }*/
-
     private List<Movie> searchMovies(String name, String fromYear, String toYear, String genreName, String ratingString) {
         double parsedRating = 0;
         if (ratingString != null && !ratingString.isEmpty()) {
@@ -432,17 +399,11 @@ public class AppController implements Initializable {
             headerBox.setStyle("-fx-background-color: #37474F; -fx-padding: 10;");
             dialog.getDialogPane().setHeader(headerBox);
 
-            // Create the GridPane for layout
-            GridPane gridPane = new GridPane();
-            gridPane.setStyle("-fx-background-color: transparent;");
-            gridPane.setHgap(10);
-            gridPane.setVgap(10);
-
-            // TextArea for movie details (now on the right side)
+            // TextArea for movie details (on the right side)
             TextArea textArea = new TextArea(getMovieDetails(selectedMovie));
             textArea.setEditable(false);
             textArea.setWrapText(true);
-            textArea.setStyle("-fx-background-color: rgba(255, 255, 255, 1); -fx-text-fill: black;");
+            textArea.setStyle("-fx-background-color: rgba(255, 255, 255, 0.8); -fx-text-fill: black;");
 
             // ImageView for the poster (on the left side)
             ImageView posterView = new ImageView();
@@ -462,20 +423,27 @@ public class AppController implements Initializable {
                 // Handle the error here, maybe show an error message to the user
             }
 
-            // Add elements to the grid
+            // Create a GridPane for layout
+            GridPane gridPane = new GridPane();
             gridPane.add(posterView, 0, 0); // Add poster to the left side
             gridPane.add(textArea, 1, 0); // Add text area to the right side
-
-            // Make sure that the gridPane is expanded to the full width of the dialog
-            gridPane.setMaxWidth(Double.MAX_VALUE);
+            gridPane.setStyle("-fx-background-color: transparent;"); // Make sure the GridPane is transparent
             GridPane.setHgrow(posterView, Priority.ALWAYS); // Allow poster to grow horizontally
             GridPane.setVgrow(posterView, Priority.ALWAYS); // Allow poster to grow vertically
             GridPane.setHgrow(textArea, Priority.ALWAYS); // Allow text area to grow horizontally
             GridPane.setVgrow(textArea, Priority.ALWAYS); // Allow text area to grow vertically
 
-            // Dialog pane settings
+            // Set the backdrop as the background of the dialog pane
+            String backdropUrl = "https://image.tmdb.org/t/p/w500" + selectedMovie.getBackdropPath();
+            dialog.getDialogPane().setStyle(
+                    "-fx-background-image: url('" + backdropUrl + "');" +
+                            "-fx-background-size: cover;" +
+                            "-fx-background-position: center center;" +
+                            "-fx-background-repeat: no-repeat;"
+            );
+
+            // Add the GridPane to the dialog
             dialog.getDialogPane().setContent(gridPane);
-            dialog.getDialogPane().setStyle("-fx-background-color: black;");
 
             // Add a button to close the dialog
             ButtonType closeButton = new ButtonType("Close", ButtonBar.ButtonData.OK_DONE);
@@ -485,6 +453,7 @@ public class AppController implements Initializable {
             dialog.showAndWait();
         }
     }
+
 
 
 

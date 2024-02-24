@@ -63,4 +63,5 @@ tasks.named('test') {
 run  {
     standardInput = System.in
     // CL app in intellij console
+    jvmArgs = ['-Dprism.order=sw']
 }
