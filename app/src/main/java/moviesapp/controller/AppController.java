@@ -74,7 +74,9 @@ public class AppController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         initializeGenreMap();
+        genreComboBox.getItems().add("None");
         genreComboBox.getItems().addAll(genreNameToIdMap.keySet());
+        genreComboBox.setValue("None");
         loadMovies();
         fetchAllMovies();
         loadFavorites();
@@ -82,6 +84,7 @@ public class AppController implements Initializable {
         moviesListView.setCellFactory(param -> new ListCell<Movie>() {
             @Override
             protected void updateItem(Movie movie, boolean empty) {
+
                 super.updateItem(movie, empty);
                 if (empty || movie == null) {
                     setText(null);
@@ -91,40 +94,47 @@ public class AppController implements Initializable {
                     hBox.setAlignment(Pos.CENTER_LEFT);
                     hBox.setPadding(new Insets(5, 10, 5, 10));
 
-
                     VBox vBoxText = new VBox(5);
                     Label titleLabel = new Label(movie.getTitle());
-                    // Utiliser extractYear pour gérer la date de sortie
-                    String yearText = extractYearSafe(movie.getReleaseDate());
-                    Label yearLabel = new Label(yearText);
+                    Label yearLabel = new Label(extractYearSafe(movie.getReleaseDate()));
                     vBoxText.getChildren().addAll(titleLabel, yearLabel);
 
                     HBox starsBox = createStarsBox(movie.getVoteAverage());
 
-                    Button likeButton = new Button();
-                    likeButton.setText(favoriteMovies.contains(movie) ? "Unlike" : "Like");
+                    Button likeButton = new Button(favoriteMovies.contains(movie) ? "Unlike" : "Like");
                     likeButton.setOnAction(event -> {
                         toggleFavorite(movie);
                         likeButton.setText(favoriteMovies.contains(movie) ? "Unlike" : "Like");
                         moviesListView.refresh();
                     });
 
+                    // Bind the width of the title and year labels to the width of the ListView minus some padding
+                    titleLabel.maxWidthProperty().bind(moviesListView.widthProperty().multiply(0.3)); // 30% of list view width
+                    yearLabel.maxWidthProperty().bind(moviesListView.widthProperty().multiply(0.1)); // 10% of list view width
+
+
                     titleLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px;");
                     yearLabel.setStyle("-fx-font-size: 12px;");
-                    titleLabel.setPrefWidth(200);
-                    yearLabel.setPrefWidth(200);
-                    starsBox.setPrefWidth(120);
 
-                    hBox.getChildren().addAll(poster(movie,110), vBoxText, starsBox, likeButton);
+                    Region spacer = new Region();
+                    HBox.setHgrow(spacer, Priority.ALWAYS);
+
+                    ImageView posterView = poster(movie, 110);
+                    HBox.setHgrow(posterView, Priority.NEVER); // Ensure the poster doesn't grow
+
+                    hBox.getChildren().addAll(poster(movie, 110), vBoxText, spacer, starsBox, likeButton);
+                    HBox.setHgrow(spacer, Priority.ALWAYS); // Grow the spacer to push everything else to the right
+                    HBox.setHgrow(vBoxText, Priority.SOMETIMES);
+
                     setGraphic(hBox);
-
-                    moviesListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-                    // Gestionnaire d'événements pour détecter les clics sur un élément de la liste
-                    moviesListView.setOnMouseClicked(event -> {
-                        if (event.getClickCount() == 1) {
-                            handleMovieClick();
-                        }});
                 }
+
+                // Set mouse click event outside of the updateItem method, as it needs to be set only once
+                moviesListView.setOnMouseClicked(event -> {
+                    if (event.getClickCount() == 1) {
+                        handleMovieClick();
+                    }
+                });
             }
         });
     }
@@ -151,7 +161,7 @@ public class AppController implements Initializable {
         moviesListView.getItems().setAll(filteredMovies);
     }
 
-    private List<Movie> searchMovies(String name, String fromYear, String toYear, String genreName, String ratingString) {
+    /*private List<Movie> searchMovies(String name, String fromYear, String toYear, String genreName, String ratingString) {
         double parsedRating = 0;
         if (ratingString != null && !ratingString.isEmpty()) {
             try {
@@ -182,7 +192,46 @@ public class AppController implements Initializable {
                     return true;
                 })
                 .collect(Collectors.toList());
+    }*/
+
+    private List<Movie> searchMovies(String name, String fromYear, String toYear, String genreName, String ratingString) {
+        double parsedRating = 0;
+        if (ratingString != null && !ratingString.isEmpty()) {
+            try {
+                parsedRating = Double.parseDouble(ratingString);
+            } catch (NumberFormatException e) {
+                // Handle the case where the rating is not a valid double
+            }
+        }
+        final double rating = parsedRating; // Make rating effectively final
+
+        // Make genreId effectively final by not modifying it after initialization
+        final Integer genreId = (genreName != null && !genreName.equals("None"))
+                ? getGenreIdByName(genreName)
+                : null;
+
+
+        // Since fromYear and toYear are used in a lambda expression, they must be effectively final
+        final String finalFromYear = fromYear;
+        final String finalToYear = toYear;
+
+        return allMovies.stream()
+                .filter(movie -> name == null || name.isEmpty() || movie.getTitle().toLowerCase().contains(name.toLowerCase()))
+                .filter(movie -> genreId == null || Arrays.stream(movie.getGenreIds()).anyMatch(id -> id == genreId))
+                .filter(movie -> rating == 0 || movie.getVoteAverage() >= rating)
+                .filter(movie -> {
+                    if (finalFromYear != null && !finalFromYear.isEmpty() && finalToYear != null && !finalToYear.isEmpty()) {
+                        int year = extractYear(movie.getReleaseDate());
+                        int from = Integer.parseInt(finalFromYear);
+                        int to = Integer.parseInt(finalToYear);
+                        return year >= from && year <= to;
+                    }
+                    return true;
+                })
+                .collect(Collectors.toList());
     }
+
+
     private void loadMovies() {
         List<Movie> movies = new ArrayList<>();
         // Calculez le numéro de la première page de l'API pour la page actuelle de l'UI
@@ -318,7 +367,7 @@ public class AppController implements Initializable {
         starsBox.setAlignment(Pos.CENTER);
         for (int i = 1; i <= 5; i++) {
             Label starLabel = new Label();
-            if (i <= rating) {
+            if (i <= Math.floor(rating/2)) {
                 starLabel.setText("\u2605"); // Unicode solid star
             } else {
                 starLabel.setText("\u2606"); // Unicode outline star
@@ -367,6 +416,7 @@ public class AppController implements Initializable {
     private void handleMovieClick() {
         Movie selectedMovie = moviesListView.getSelectionModel().getSelectedItem();
         if (selectedMovie != null) {
+
             // Créer une nouvelle boîte de dialogue d'information
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Details du film");
@@ -419,6 +469,9 @@ public class AppController implements Initializable {
             alert.showAndWait();
         }
     }
+
+
+
 
     private void setPosterAsync(Movie movie, ImageView imageView, int width) {
         Task<Image> loadImageTask = new Task<>() {
