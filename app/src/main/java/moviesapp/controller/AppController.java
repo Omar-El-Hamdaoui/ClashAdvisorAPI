@@ -82,7 +82,6 @@ public class AppController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        initializeGenreMap();
         genreComboBox.getItems().add("None");
         genreComboBox.getItems().addAll(genreNameToIdMap.keySet());
         genreComboBox.setValue("None");
