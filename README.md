@@ -15,13 +15,14 @@ Team 2
 
 
 How to use the commands :
-It's simple you just need to run the class ListMoviesCommand at the start it will give you all the movies and then you
-can do what you want depending on what's showing on the terminal
+On build.gradle you have to put the application on
+mainClass = 'moviesapp.ListMoviesCommand'
+And then with a simple run from the gradle (Tasks-->application-->run) it will work with you.
 
 to use GUI:
-you just have to type in the terminal ./gradlew run
-
-
+On build.gradle you have to put the application on
+mainClass = 'moviesapp.App'
+And then with a simple run from the gradle (Tasks-->application-->run) it will work with you.
 
 
 
