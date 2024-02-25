@@ -40,7 +40,7 @@ public class FavoritesCommand {
         }
     }
 
-    private Set<Movie> loadFavoritesFromFile() {
+    protected Set<Movie> loadFavoritesFromFile() {
         Set<Movie> favorites = new HashSet<>();
         ObjectMapper objectMapper = new ObjectMapper(); // Assuming you're using Jackson ObjectMapper
         try (BufferedReader reader = new BufferedReader(new FileReader(FAVORITES_FILE))) {
@@ -59,7 +59,7 @@ public class FavoritesCommand {
     }
 
 
-    private void saveFavoritesToFile() {
+    protected void saveFavoritesToFile() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(FAVORITES_FILE))) {
             for (Movie movie : favoriteMovies) {
                 writer.write(movie.getTitle());

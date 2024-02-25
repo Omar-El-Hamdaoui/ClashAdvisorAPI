@@ -31,6 +31,7 @@ public class ListMoviesCommand implements Runnable {
     private String allDetails;
     public Set<Movie> favoriteMovies = new HashSet<>();
     private FavoritesCommand favoritesCommand;
+
     public ListMoviesCommand() {
         this.favoritesCommand = new FavoritesCommand();
     }
@@ -195,6 +196,9 @@ public class ListMoviesCommand implements Runnable {
         Scanner scanner = new Scanner(System.in);
         String input;
 
+        // Load favorites from file
+        Set<Movie> favorites = loadFavoritesFromFile();
+
         // Initially print the results
         printResults(movies);
 
@@ -207,27 +211,29 @@ public class ListMoviesCommand implements Runnable {
                     case "add":
                         System.out.println("Enter the title of the movie to add to favorites:");
                         String titleToAdd = scanner.nextLine().trim();
-                        movies.stream()
+                        Optional<Movie> foundMovie = movies.stream()
                                 .filter(movie -> movie.getTitle().equalsIgnoreCase(titleToAdd))
-                                .findFirst()
-                                .ifPresentOrElse(
-                                        this::addFavoriteMovie,
-                                        () -> System.out.println("Movie not found: " + titleToAdd)
-                                );
+                                .findFirst();
+                        if (foundMovie.isPresent()) {
+                            favoritesCommand.addFavoriteMovie(foundMovie.get());
+                        } else {
+                            System.out.println("Movie not found: " + titleToAdd);
+                        }
                         break;
                     case "remove":
                         System.out.println("Enter the title of the movie to remove from favorites:");
                         String titleToRemove = scanner.nextLine().trim();
-                        movies.stream()
+                        Optional<Movie> movieToRemove = favorites.stream()
                                 .filter(movie -> movie.getTitle().equalsIgnoreCase(titleToRemove))
-                                .findFirst()
-                                .ifPresentOrElse(
-                                        this::removeFavoriteMovie,
-                                        () -> System.out.println("Movie not found: " + titleToRemove)
-                                );
+                                .findFirst();
+                        if (movieToRemove.isPresent()) {
+                            favoritesCommand.removeFavoriteMovie(movieToRemove.get());
+                        } else {
+                            System.out.println("Movie not found in favorites: " + titleToRemove);
+                        }
                         break;
                     case "list":
-                        listFavoriteMovies();
+                        favoritesCommand.listFavoriteMovies();
                         break;
                     case "done":
                         manageFavorites = false;
@@ -238,13 +244,11 @@ public class ListMoviesCommand implements Runnable {
                 }
             }
 
-            System.out.println("Do you want to save the results to a file? (yes/no)");
+            System.out.println("Do you want to save the favorites to a file? (yes/no)");
             input = scanner.nextLine().trim();
             if ("yes".equalsIgnoreCase(input)) {
-                System.out.println("Enter file name:");
-                String fileName = scanner.nextLine().trim();
-                saveResultsToFile(movies, fileName);
-                break; // Exit after saving
+                favoritesCommand.saveFavoritesToFile();
+                System.out.println("Favorites saved to file.");
             }
 
             System.out.println("Do you want to add criteria to search? (yes/no)");
@@ -261,6 +265,9 @@ public class ListMoviesCommand implements Runnable {
             movies = filterMovies(getAllTheMovies()); // Important to re-filter from all movies
             printResults(movies); // Display updated list after re-filtering
         } while (true);
+    }
+    private Set<Movie> loadFavoritesFromFile() {
+        return favoritesCommand.loadFavoritesFromFile();
     }
     private boolean movieContainsAnyGenre(Movie movie, List<Integer> genreIdsToSearch) {
         for (int genreId : genreIdsToSearch) {
