@@ -3,6 +3,7 @@ package moviesapp.controller;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import javafx.concurrent.Task;
+import javafx.geometry.HPos;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -160,39 +161,6 @@ public class AppController implements Initializable {
         List<Movie> filteredMovies = searchMovies(name, fromYear, toYear, genre, rating); // You need to implement this method.
         moviesListView.getItems().setAll(filteredMovies);
     }
-
-    /*private List<Movie> searchMovies(String name, String fromYear, String toYear, String genreName, String ratingString) {
-        double parsedRating = 0;
-        if (ratingString != null && !ratingString.isEmpty()) {
-            try {
-                parsedRating = Double.parseDouble(ratingString);
-            } catch (NumberFormatException e) {
-                // Handle the case where the rating is not a valid double
-            }
-        }
-        final double rating = parsedRating;
-
-        Integer parsedGenreId = null;
-        if (genreName != null && !genreName.isEmpty()) {
-            parsedGenreId = getGenreIdByName(genreName);
-        }
-        final Integer genreId = parsedGenreId;
-
-        return allMovies.stream()
-                .filter(movie -> name == null || name.isEmpty() || movie.getTitle().toLowerCase().contains(name.toLowerCase()))
-                .filter(movie -> genreId == null || Arrays.stream(movie.getGenreIds()).anyMatch(id -> id == genreId))
-                .filter(movie -> rating == 0 || movie.getVoteAverage() >= rating)
-                .filter(movie -> {
-                    if (fromYear != null && !fromYear.isEmpty() && toYear != null && !toYear.isEmpty()) {
-                        int year = extractYear(movie.getReleaseDate());
-                        int from = Integer.parseInt(fromYear);
-                        int to = Integer.parseInt(toYear);
-                        return year >= from && year <= to;
-                    }
-                    return true;
-                })
-                .collect(Collectors.toList());
-    }*/
 
     private List<Movie> searchMovies(String name, String fromYear, String toYear, String genreName, String ratingString) {
         double parsedRating = 0;
@@ -416,58 +384,89 @@ public class AppController implements Initializable {
     private void handleMovieClick() {
         Movie selectedMovie = moviesListView.getSelectionModel().getSelectedItem();
         if (selectedMovie != null) {
+            // Create a new custom dialog
+            Dialog<Void> dialog = new Dialog<>();
+            dialog.setTitle("Movie Details");
 
-            // Créer une nouvelle boîte de dialogue d'information
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Details du film");
-            alert.setHeaderText(selectedMovie.getTitle());
+            // Remove default icon (information icon)
+            dialog.setGraphic(null);
 
-            // Créer un GridPane pour organiser l'affichage
+            // Set the header with movie title
+            HBox headerBox = new HBox();
+            Label titleLabel = new Label(selectedMovie.getTitle());
+            titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;");
+            headerBox.getChildren().add(titleLabel);
+            headerBox.setStyle("-fx-background-color: #37474F; -fx-padding: 10;");
+            dialog.getDialogPane().setHeader(headerBox);
+
+            // TextArea for movie details (on the right side)
+            TextArea textArea = new TextArea(getMovieDetails(selectedMovie));
+            textArea.setEditable(false);
+            textArea.setWrapText(true);
+            textArea.setStyle("-fx-background-color: rgba(255, 255, 255, 0.8); -fx-text-fill: black;");
+
+            // ImageView for the poster (on the left side)
+            ImageView posterView = new ImageView();
+            posterView.setPreserveRatio(true);
+            posterView.setFitHeight(300); // Adjust the height as needed
+
+            try {
+                // Load the poster image
+                String posterPath = selectedMovie.getPosterPath();
+                if (posterPath != null && !posterPath.isEmpty()) {
+                    String posterUrl = "https://image.tmdb.org/t/p/w500" + posterPath;
+                    Image posterImage = new Image(posterUrl, true);
+                    posterView.setImage(posterImage);
+                }
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+                // Handle the error here, maybe show an error message to the user
+            }
+
+            // Create a GridPane for layout
             GridPane gridPane = new GridPane();
-            gridPane.setHgap(10); // Espacement horizontal entre les éléments
-            gridPane.setVgap(5); // Espacement vertical entre les éléments
-            // Ajoutez ces lignes pour ajuster la taille de la boîte de dialogue
-            gridPane.setMinSize(800, 400); // Taille minimale
-            gridPane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE); // Taille maximale
+            gridPane.add(posterView, 0, 0); // Add poster to the left side
+            gridPane.add(textArea, 1, 0); // Add text area to the right side
+            gridPane.setStyle("-fx-background-color: transparent;"); // Make sure the GridPane is transparent
+            GridPane.setHgrow(posterView, Priority.ALWAYS); // Allow poster to grow horizontally
+            GridPane.setVgrow(posterView, Priority.ALWAYS); // Allow poster to grow vertically
+            GridPane.setHgrow(textArea, Priority.ALWAYS); // Allow text area to grow horizontally
+            GridPane.setVgrow(textArea, Priority.ALWAYS); // Allow text area to grow vertically
 
-            // Ajouter l'image à la première colonne du GridPane
-            gridPane.add(poster(selectedMovie, 250), 2, 0);
-
-            TextArea textArea = new TextArea();
-            textArea.setEditable(false); // Rendre le TextArea en lecture seule
-            textArea.setWrapText(true); // Permettre le retour à la ligne automatique
-
-            // Construire une chaîne de caractères avec toutes les informations du film
-            String movieDetails =
-                    "Id: " + selectedMovie.getId() +'\n'+
-                    "Original Language:  " + selectedMovie.getOriginalLanguage() +'\n'+
-                    "Original Title:  " + selectedMovie.getOriginalTitle() +'\n'+
-                    "Overview:  " + selectedMovie.getOverview() +'\n'+
-                    "Popularity: " + selectedMovie.getPopularity() +'\n'+
-                    "Release Date:  " + selectedMovie.getReleaseDate() +'\n'+
-                    "Vote Average: " + selectedMovie.getVoteAverage() +'\n'+
-                    "Vote Count: " + selectedMovie.getVoteCount();
-
-            // Définir la chaîne de caractères comme contenu du TextArea
-            textArea.setText(movieDetails);
-
+            // Set the backdrop as the background of the dialog pane
             String backdropUrl = "https://image.tmdb.org/t/p/w500" + selectedMovie.getBackdropPath();
-
-            // Ajouter le VBox à la deuxième colonne du GridPane
-            gridPane.add(textArea, 3, 0);
-
-            // Ajouter le GridPane à la boîte de dialogue
-            alert.getDialogPane().setContent(gridPane);
-            alert.getDialogPane().setStyle(
-                    "-fx-background-image: url('"+backdropUrl+"');" +
+            dialog.getDialogPane().setStyle(
+                    "-fx-background-image: url('" + backdropUrl + "');" +
                             "-fx-background-size: cover;" +
-                            "-fx-background-repeat: no-repeat;" +
-                            "-fx-background-position: center;"
+                            "-fx-background-position: center center;" +
+                            "-fx-background-repeat: no-repeat;"
             );
 
-            // Afficher la boîte de dialogue
-            alert.showAndWait();
+            // Add the GridPane to the dialog
+            dialog.getDialogPane().setContent(gridPane);
+
+            // Add a button to close the dialog
+            ButtonType closeButton = new ButtonType("Close", ButtonBar.ButtonData.OK_DONE);
+            dialog.getDialogPane().getButtonTypes().add(closeButton);
+
+            // Show the custom dialog
+            dialog.showAndWait();
         }
+    }
+
+
+
+
+
+    private String getMovieDetails(Movie movie) {
+        return "Id: " + movie.getId() + '\n' +
+                "Original Language:  " + movie.getOriginalLanguage() + '\n' +
+                "Original Title:  " + movie.getOriginalTitle() + '\n' +
+                "Overview:  " + movie.getOverview() + '\n' +
+                "Popularity: " + movie.getPopularity() + '\n' +
+                "Release Date:  " + movie.getReleaseDate() + '\n' +
+                "Vote Average: " + movie.getVoteAverage() + '\n' +
+                "Vote Count: " + movie.getVoteCount();
     }
 
 
@@ -479,6 +478,7 @@ public class AppController implements Initializable {
             protected Image call() throws Exception {
                 // Charger l'image depuis l'URL
                 String posterUrl = "https://image.tmdb.org/t/p/w500" + movie.getPosterPath();
+
                 return new Image(posterUrl);
             }
         };
@@ -503,6 +503,7 @@ public class AppController implements Initializable {
                 .build();
 
         String posterUrl = "https://image.tmdb.org/t/p/w500" + movie.getPosterPath();
+
         Image cachedImage = imageCache.getIfPresent(posterUrl);
         if (cachedImage != null) {
             imageView.setImage(cachedImage);
