@@ -42,13 +42,12 @@ public class FavoritesCommand {
 
     protected Set<Movie> loadFavoritesFromFile() {
         Set<Movie> favorites = new HashSet<>();
-        ObjectMapper objectMapper = new ObjectMapper(); // Assuming you're using Jackson ObjectMapper
         try (BufferedReader reader = new BufferedReader(new FileReader(FAVORITES_FILE))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                // Parse JSON data from each line and create Movie objects
-                JsonNode jsonNode = objectMapper.readTree(line);
-                Movie movie = objectMapper.treeToValue(jsonNode, Movie.class);
+                // Assuming each line represents a movie title
+                Movie movie = new Movie();
+                movie.setTitle(line);
                 favorites.add(movie);
             }
         } catch (IOException e) {
