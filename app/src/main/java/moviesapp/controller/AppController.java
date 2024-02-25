@@ -2,7 +2,6 @@ package moviesapp.controller;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.geometry.HPos;
 import javafx.scene.image.Image;
@@ -35,10 +34,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
-
-
 
 
 public class AppController implements Initializable {
@@ -66,7 +61,6 @@ public class AppController implements Initializable {
     private Button nextPageButton;
 
 
-
     private Set<Movie> favoriteMovies = new HashSet<>();
     private int currentUiPage = 1;
     private final int apiPagesPerUiPage = 1; // Nombre de pages de l'API chargées par page de l'UI
@@ -75,8 +69,6 @@ public class AppController implements Initializable {
     private Set<Movie> allMovies = new HashSet<>();
     private Map<String, Integer> genreNameToIdMap=Genre.getGenreMap();
     private String favoritesFilePath = "favorites.txt";
-    private static final int NUMBER_OF_THREADS = 4; // Adjust based on your needs and system capabilities
-    private final ExecutorService executorService = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
 
 
@@ -284,8 +276,6 @@ public class AppController implements Initializable {
         return moviesOnPage;
     }
 
-
-
     private Integer getGenreIdByName(String genreName) {
         if (genreName == null || genreNameToIdMap == null) {
             return null;
@@ -456,21 +446,22 @@ public class AppController implements Initializable {
 
 
     private void setPosterAsync(Movie movie, ImageView imageView, int width) {
-        Runnable loadImageTask = () -> {
-            try {
-                // Load the image from URL
+        Task<Image> loadImageTask = new Task<>() {
+            @Override
+            protected Image call() throws Exception {
+                // Charger l'image depuis l'URL
                 String posterUrl = "https://image.tmdb.org/t/p/w500" + movie.getPosterPath();
-                Image posterImage = new Image(posterUrl, true); // true to load in background
-                // Use Platform.runLater to update the UI components on the JavaFX Application Thread
-                Platform.runLater(() -> imageView.setImage(posterImage));
-            } catch (Exception e) {
-                e.printStackTrace();
-                // Handle exceptions, possibly set a default image in case of error
+
+                return new Image(posterUrl);
             }
         };
 
-        // Submit the task to the executor
-        executorService.submit(loadImageTask);
+        loadImageTask.setOnSucceeded(event -> {
+            Image posterImage = loadImageTask.getValue();
+            imageView.setImage(posterImage);
+        });
+
+        new Thread(loadImageTask).start();
     }
 
     private ImageView poster(Movie movie, int width) {
@@ -564,6 +555,5 @@ public class AppController implements Initializable {
             e.printStackTrace();
         }
     }
-
 
 }
