@@ -12,15 +12,6 @@ import java.util.stream.Collectors;
 
 public class ListMoviesCommand implements Runnable {
     private User currentUser;
-    public void setCurrentUser(User user) {
-        this.currentUser = user;
-    }
-    public static void main(String[] args) {
-        // Initialize your CLI application components
-        ListMoviesCommand appCLI = new ListMoviesCommand();
-        // Proceed with the application logic
-        appCLI.run();
-    }
     private String title;
 
     private String partialTitle;
@@ -39,6 +30,17 @@ public class ListMoviesCommand implements Runnable {
     private String outputFile;
     private String allDetails;
     public Set<Movie> favoriteMovies = new HashSet<>();
+    private FavoritesCommand favoritesCommand;
+    public ListMoviesCommand() {
+        this.favoritesCommand = new FavoritesCommand();
+    }
+
+    public static void main(String[] args) {
+        // Initialize your CLI application components
+        ListMoviesCommand appCLI = new ListMoviesCommand();
+        // Proceed with the application logic
+        appCLI.run();
+    }
 
 
     @Override
@@ -81,8 +83,114 @@ public class ListMoviesCommand implements Runnable {
         }
     }
 
+    public void printResults(List<Movie> movies) {
+        if ("full".equals(allDetails)) {
+            printResultsToConsole(movies);
+        } else {
+            printResultsTitles(movies);
+        }
+    }
 
+    public static List<Movie> getAllTheMovies() {
+        List<Movie> allTheMovies = new ArrayList<>();
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonNode = objectMapper.readTree(new File("src/text.json"));
+            JsonNode resultsNode = jsonNode.get("results");
 
+            for (JsonNode result : resultsNode) {
+                Movie movie = objectMapper.treeToValue(result, Movie.class);
+                allTheMovies.add(movie);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return allTheMovies;
+    }
+
+    public void setTitle(String title){
+        this.title = title;
+    }
+    public List<Movie> filterMovies(List<Movie> movies) {
+        return movies.stream()
+                .filter(movie -> (title == null || movie.getTitle().toLowerCase().contains(title.toLowerCase()))
+                        && (partialTitle == null || movie.getTitle().toLowerCase().contains(partialTitle.toLowerCase()))
+                        && (voteAverage == null || (movie.getVoteAverage() >= voteAverage - 0.1 && movie.getVoteAverage() <= voteAverage + 0.1))
+                        && (minVoteAverage == null || movie.getVoteAverage() >= minVoteAverage)
+                        && (maxVoteAverage == null || movie.getVoteAverage() <= maxVoteAverage)
+                        && (genreIds == null || movie.getGenreIds() != null && movie.getGenreIds().length > 0 && movieContainsAnyGenre(movie, genreIds))
+                        && (releaseDate == null || movie.getReleaseDate().contains(releaseDate))
+                        && (releaseDateAfter == null || movie.getReleaseDate().compareTo(releaseDateAfter) > 0)
+                        && (releaseDateBefore == null || movie.getReleaseDate().compareTo(releaseDateBefore) < 0))
+                .collect(Collectors.toList());
+    }
+    private void saveResultsToFile(List<Movie> movies, String fileName) {
+        try (FileWriter writer = new FileWriter(fileName)) {
+            for (Movie movie : movies) {
+                writer.write(movie.toString());
+                writer.write(System.lineSeparator());
+            }
+            System.out.println("Results saved to: " + fileName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void printResultsToConsole(List<Movie> movies) {
+        for (Movie movie : movies) {
+            System.out.println(movie);
+        }
+    }
+    private void printResultsTitles(List<Movie> movies){
+        for(Movie movie :movies){
+            System.out.println(movie.getTitle());
+        }
+    }
+
+    private void applyCriteria(String criteria, Scanner scanner) {
+        switch (criteria) {
+            case "title":
+                System.out.println("Enter title:");
+                title = scanner.nextLine().trim();
+                break;
+            case "partialTitle":
+                System.out.println("Enter partial title:");
+                partialTitle = scanner.nextLine().trim();
+                break;
+            case "voteAverage":
+                System.out.println("Enter vote average:");
+                voteAverage = Double.valueOf(scanner.nextLine().trim());
+                break;
+            case "minVoteAverage":
+                System.out.println("Enter minimum vote average:");
+                minVoteAverage = Double.valueOf(scanner.nextLine().trim());
+                break;
+            case "maxVoteAverage":
+                System.out.println("Enter maximum vote average:");
+                maxVoteAverage = Double.valueOf(scanner.nextLine().trim());
+                break;
+            case "genreIds":
+                System.out.println("Enter genre IDs (comma-separated):");
+                String[] ids = scanner.nextLine().trim().split(",");
+                genreIds = Arrays.stream(ids).map(Integer::valueOf).collect(Collectors.toList());
+                break;
+            case "releaseDate":
+                System.out.println("Enter release date:");
+                releaseDate = scanner.nextLine().trim();
+                break;
+            case "releaseDateAfter":
+                System.out.println("Enter release date after:");
+                releaseDateAfter = scanner.nextLine().trim();
+                break;
+            case "releaseDateBefore":
+                System.out.println("Enter release date before:");
+                releaseDateBefore = scanner.nextLine().trim();
+                break;
+            default:
+                System.out.println("Invalid criteria. Please try again.");
+                break;
+        }
+    }
     private void interactiveSearch(List<Movie> movies) {
         Scanner scanner = new Scanner(System.in);
         String input;
@@ -154,109 +262,6 @@ public class ListMoviesCommand implements Runnable {
             printResults(movies); // Display updated list after re-filtering
         } while (true);
     }
-
-
-    private void applyCriteria(String criteria, Scanner scanner) {
-        switch (criteria) {
-            case "title":
-                System.out.println("Enter title:");
-                title = scanner.nextLine().trim();
-                break;
-            case "partialTitle":
-                System.out.println("Enter partial title:");
-                partialTitle = scanner.nextLine().trim();
-                break;
-            case "voteAverage":
-                System.out.println("Enter vote average:");
-                voteAverage = Double.valueOf(scanner.nextLine().trim());
-                break;
-            case "minVoteAverage":
-                System.out.println("Enter minimum vote average:");
-                minVoteAverage = Double.valueOf(scanner.nextLine().trim());
-                break;
-            case "maxVoteAverage":
-                System.out.println("Enter maximum vote average:");
-                maxVoteAverage = Double.valueOf(scanner.nextLine().trim());
-                break;
-            case "genreIds":
-                System.out.println("Enter genre IDs (comma-separated):");
-                String[] ids = scanner.nextLine().trim().split(",");
-                genreIds = Arrays.stream(ids).map(Integer::valueOf).collect(Collectors.toList());
-                break;
-            case "releaseDate":
-                System.out.println("Enter release date:");
-                releaseDate = scanner.nextLine().trim();
-                break;
-            case "releaseDateAfter":
-                System.out.println("Enter release date after:");
-                releaseDateAfter = scanner.nextLine().trim();
-                break;
-            case "releaseDateBefore":
-                System.out.println("Enter release date before:");
-                releaseDateBefore = scanner.nextLine().trim();
-                break;
-            default:
-                System.out.println("Invalid criteria. Please try again.");
-                break;
-        }
-    }
-
-
-
-    public void printResults(List<Movie> movies) {
-        if ("full".equals(allDetails)) {
-            printResultsToConsole(movies);
-        } else {
-            printResultsTitles(movies);
-        }
-    }
-
-
-
-    public List<Movie> filterMovies(List<Movie> movies) {
-        return movies.stream()
-                .filter(movie -> (title == null || movie.getTitle().toLowerCase().contains(title.toLowerCase()))
-                        && (partialTitle == null || movie.getTitle().toLowerCase().contains(partialTitle.toLowerCase()))
-                        && (voteAverage == null || (movie.getVoteAverage() >= voteAverage - 0.1 && movie.getVoteAverage() <= voteAverage + 0.1))
-                        && (minVoteAverage == null || movie.getVoteAverage() >= minVoteAverage)
-                        && (maxVoteAverage == null || movie.getVoteAverage() <= maxVoteAverage)
-                        && (genreIds == null || movie.getGenreIds() != null && movie.getGenreIds().length > 0 && movieContainsAnyGenre(movie, genreIds))
-                        && (releaseDate == null || movie.getReleaseDate().contains(releaseDate))
-                        && (releaseDateAfter == null || movie.getReleaseDate().compareTo(releaseDateAfter) > 0)
-                        && (releaseDateBefore == null || movie.getReleaseDate().compareTo(releaseDateBefore) < 0))
-                .collect(Collectors.toList());
-    }
-
-
-
-
-
-
-
-
-    private void saveResultsToFile(List<Movie> movies, String fileName) {
-        try (FileWriter writer = new FileWriter(fileName)) {
-            for (Movie movie : movies) {
-                writer.write(movie.toString());
-                writer.write(System.lineSeparator());
-            }
-            System.out.println("Results saved to: " + fileName);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void printResultsToConsole(List<Movie> movies) {
-        for (Movie movie : movies) {
-            System.out.println(movie);
-        }
-    }
-    private void printResultsTitles(List<Movie> movies){
-        for(Movie movie :movies){
-            System.out.println(movie.getTitle());
-        }
-    }
-
     private boolean movieContainsAnyGenre(Movie movie, List<Integer> genreIdsToSearch) {
         for (int genreId : genreIdsToSearch) {
             for (int movieGenreId : movie.getGenreIds()) {
@@ -266,27 +271,6 @@ public class ListMoviesCommand implements Runnable {
             }
         }
         return false;
-    }
-
-    public static List<Movie> getAllTheMovies() {
-        List<Movie> allTheMovies = new ArrayList<>();
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode jsonNode = objectMapper.readTree(new File("src/text.json"));
-            JsonNode resultsNode = jsonNode.get("results");
-
-            for (JsonNode result : resultsNode) {
-                Movie movie = objectMapper.treeToValue(result, Movie.class);
-                allTheMovies.add(movie);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return allTheMovies;
-    }
-
-    public void setTitle(String title){
-        this.title = title;
     }
 
 }
