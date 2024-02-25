@@ -184,12 +184,15 @@ public class ListMoviesCommand implements Runnable {
         // Initially print the results
         printResults(movies);
 
+        System.out.println("Press Enter 2 times to start managing favorites...");
+        scanner.nextLine();
+
         do {
             boolean manageFavorites = true;
             while (manageFavorites) {
                 System.out.println("Do you want to manage favorite movies? (add, remove, list, done)");
-                input = scanner.nextLine().trim();
-                switch (input.toLowerCase()) {
+                input = scanner.nextLine();
+                switch (input.trim()) {
                     case "add":
                         System.out.println("Enter the title of the movie to add to favorites:");
                         String titleToAdd = scanner.nextLine().trim();
