@@ -11,7 +11,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ListMoviesCommand implements Runnable {
-    private User currentUser;
     private String title;
 
     private String partialTitle;
@@ -65,23 +64,6 @@ public class ListMoviesCommand implements Runnable {
     public void addFavoriteMovie(Movie movie) {
         favoriteMovies.add(movie);
         System.out.println("Movie added to favorites: " + movie.getTitle());
-    }
-
-    public void removeFavoriteMovie(Movie movie) {
-        if (favoriteMovies.remove(movie)) {
-            System.out.println("Movie removed from favorites: " + movie.getTitle());
-        } else {
-            System.out.println("Movie not found in favorites: " + movie.getTitle());
-        }
-    }
-
-    public void listFavoriteMovies() {
-        if (favoriteMovies.isEmpty()) {
-            System.out.println("No favorite movies.");
-        } else {
-            System.out.println("Favorite Movies:");
-            favoriteMovies.forEach(movie -> System.out.println(movie.getTitle()));
-        }
     }
 
     public void printResults(List<Movie> movies) {
