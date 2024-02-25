@@ -76,19 +76,18 @@ public class AppController implements Initializable {
     private Map<String, Integer> genreNameToIdMap;
     private String favoritesFilePath = "favorites.txt";
     private static final int NUMBER_OF_THREADS = 4; // Adjust based on your needs and system capabilities
-    private MovieService movieService;
-    private ExecutorService executorService = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
+    private final ExecutorService executorService = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
+
 
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        this.movieService = new MovieService(executorService);
         initializeGenreMap();
         genreComboBox.getItems().add("None");
         genreComboBox.getItems().addAll(genreNameToIdMap.keySet());
         genreComboBox.setValue("None");
         loadMovies();
-        //fetchAllMovies();
+        fetchAllMovies();
         loadFavorites();
 
         moviesListView.setCellFactory(param -> new ListCell<Movie>() {
@@ -147,15 +146,6 @@ public class AppController implements Initializable {
                 });
             }
         });
-        fetchMoviesAndUpdateUI();
-    }
-
-    private void fetchMoviesAndUpdateUI() {
-        // Example of fetching all movies. Adjust according to your actual UI update needs.
-        Platform.runLater(() -> {
-            Set<Movie> movies = movieService.fetchAllMovies(totalApiPages); // Adjust your logic to handle asynchronous properly
-            // Update your ListView or other UI components here with the fetched movies
-        });
     }
 
     private String extractYearSafe(String releaseDate) {
@@ -164,7 +154,6 @@ public class AppController implements Initializable {
         }
         return releaseDate.substring(0, 4); // Extraher et retourner l'année
     }
-
 
 
 
@@ -231,7 +220,37 @@ public class AppController implements Initializable {
         updateNavigationButtons();
     }
 
+    public void fetchAllMovies() {
+        OkHttpClient client = new OkHttpClient();
+        ObjectMapper objectMapper = new ObjectMapper();
+        allMovies.clear(); // Assurez-vous que la liste est vide avant de commencer le processus de récupération.
 
+        for (int page = 1; page <= totalApiPages; page++) {
+            Request request = new Request.Builder()
+                    .url("https://api.themoviedb.org/3/movie/popular?language=en-US&page=" + page + "&api_key=b8f844e585235d0341ba72bbc763ead2")
+                    .get()
+                    .build();
+
+            try {
+                Response response = client.newCall(request).execute();
+                if (response.isSuccessful() && response.body() != null) {
+                    String responseBody = response.body().string();
+                    JsonNode rootNode = objectMapper.readTree(responseBody);
+                    JsonNode resultsNode = rootNode.path("results");
+
+                    for (JsonNode node : resultsNode) {
+                        Movie movie = objectMapper.treeToValue(node, Movie.class);
+                        allMovies.add(movie); // Accumulez les films de toutes les pages ici.
+                    }
+                } else {
+                    System.out.println("Failed to get response from the API for page " + page);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                // Il pourrait être judicieux d'introduire une certaine forme de gestion des erreurs ou de réessayer la logique ici.
+            }
+        }
+    }
 
 
 
@@ -270,26 +289,7 @@ public class AppController implements Initializable {
 
 
     private void initializeGenreMap() {
-        genreNameToIdMap = new HashMap<>();
-        genreNameToIdMap.put("Action", 28);
-        genreNameToIdMap.put("Adventure", 12);
-        genreNameToIdMap.put("Animation", 16);
-        genreNameToIdMap.put("Comedy", 35);
-        genreNameToIdMap.put("Crime", 80);
-        genreNameToIdMap.put("Documentary", 99);
-        genreNameToIdMap.put("Drama", 18);
-        genreNameToIdMap.put("Family", 10751);
-        genreNameToIdMap.put("Fantasy", 14);
-        genreNameToIdMap.put("History", 36);
-        genreNameToIdMap.put("Horror", 27);
-        genreNameToIdMap.put("Music", 10402);
-        genreNameToIdMap.put("Mystery", 9648);
-        genreNameToIdMap.put("Romance", 10749);
-        genreNameToIdMap.put("Science fiction", 878);
-        genreNameToIdMap.put("Tv movie", 10770);
-        genreNameToIdMap.put("Thriller", 53);
-        genreNameToIdMap.put("War", 10752);
-        genreNameToIdMap.put("Western", 37);
+        genreNameToIdMap = Genre.getGenreMap();
     }
 
     private Integer getGenreIdByName(String genreName) {
@@ -461,7 +461,23 @@ public class AppController implements Initializable {
 
 
 
+    private void setPosterAsync(Movie movie, ImageView imageView, int width) {
+        Runnable loadImageTask = () -> {
+            try {
+                // Load the image from URL
+                String posterUrl = "https://image.tmdb.org/t/p/w500" + movie.getPosterPath();
+                Image posterImage = new Image(posterUrl, true); // true to load in background
+                // Use Platform.runLater to update the UI components on the JavaFX Application Thread
+                Platform.runLater(() -> imageView.setImage(posterImage));
+            } catch (Exception e) {
+                e.printStackTrace();
+                // Handle exceptions, possibly set a default image in case of error
+            }
+        };
 
+        // Submit the task to the executor
+        executorService.submit(loadImageTask);
+    }
 
     private ImageView poster(Movie movie, int width) {
         ImageView imageView = new ImageView();
@@ -484,24 +500,6 @@ public class AppController implements Initializable {
             setPosterAsync(movie, imageView, width);
         }
         return imageView;
-    }
-
-    private void setPosterAsync(Movie movie, ImageView imageView, int width) {
-        Runnable loadImageTask = () -> {
-            try {
-                // Load the image from URL
-                String posterUrl = "https://image.tmdb.org/t/p/w500" + movie.getPosterPath();
-                Image posterImage = new Image(posterUrl, true); // true to load in background
-                // Use Platform.runLater to update the UI components on the JavaFX Application Thread
-                Platform.runLater(() -> imageView.setImage(posterImage));
-            } catch (Exception e) {
-                e.printStackTrace();
-                // Handle exceptions, possibly set a default image in case of error
-            }
-        };
-
-        // Submit the task to the executor
-        executorService.submit(loadImageTask);
     }
 
 
