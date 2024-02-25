@@ -67,14 +67,13 @@ public class AppController implements Initializable {
     private final int totalApiPages = 100; // Total des pages de l'API à charger
     private final int totalPagesUi = totalApiPages / apiPagesPerUiPage;
     private Set<Movie> allMovies = new HashSet<>();
-    private Map<String, Integer> genreNameToIdMap;
+    private Map<String, Integer> genreNameToIdMap=Genre.getGenreMap();
     private String favoritesFilePath = "favorites.txt";
 
 
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        initializeGenreMap();
         genreComboBox.getItems().add("None");
         genreComboBox.getItems().addAll(genreNameToIdMap.keySet());
         genreComboBox.setValue("None");
@@ -275,32 +274,6 @@ public class AppController implements Initializable {
         }
 
         return moviesOnPage;
-    }
-
-
-
-
-    private void initializeGenreMap() {
-        genreNameToIdMap = new HashMap<>();
-        genreNameToIdMap.put("Action", 28);
-        genreNameToIdMap.put("Adventure", 12);
-        genreNameToIdMap.put("Animation", 16);
-        genreNameToIdMap.put("Comedy", 35);
-        genreNameToIdMap.put("Crime", 80);
-        genreNameToIdMap.put("Documentary", 99);
-        genreNameToIdMap.put("Drama", 18);
-        genreNameToIdMap.put("Family", 10751);
-        genreNameToIdMap.put("Fantasy", 14);
-        genreNameToIdMap.put("History", 36);
-        genreNameToIdMap.put("Horror", 27);
-        genreNameToIdMap.put("Music", 10402);
-        genreNameToIdMap.put("Mystery", 9648);
-        genreNameToIdMap.put("Romance", 10749);
-        genreNameToIdMap.put("Science fiction", 878);
-        genreNameToIdMap.put("Tv movie", 10770);
-        genreNameToIdMap.put("Thriller", 53);
-        genreNameToIdMap.put("War", 10752);
-        genreNameToIdMap.put("Western", 37);
     }
 
     private Integer getGenreIdByName(String genreName) {
