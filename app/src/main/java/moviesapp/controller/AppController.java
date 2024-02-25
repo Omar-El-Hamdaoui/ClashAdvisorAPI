@@ -73,7 +73,7 @@ public class AppController implements Initializable {
     private final int totalApiPages = 100; // Total des pages de l'API à charger
     private final int totalPagesUi = totalApiPages / apiPagesPerUiPage;
     private Set<Movie> allMovies = new HashSet<>();
-    private Map<String, Integer> genreNameToIdMap;
+    private Map<String, Integer> genreNameToIdMap=Genre.getGenreMap();
     private String favoritesFilePath = "favorites.txt";
     private static final int NUMBER_OF_THREADS = 4; // Adjust based on your needs and system capabilities
     private final ExecutorService executorService = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
@@ -286,11 +286,6 @@ public class AppController implements Initializable {
     }
 
 
-
-
-    private void initializeGenreMap() {
-        genreNameToIdMap = Genre.getGenreMap();
-    }
 
     private Integer getGenreIdByName(String genreName) {
         if (genreName == null || genreNameToIdMap == null) {
