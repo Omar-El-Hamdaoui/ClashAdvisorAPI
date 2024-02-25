@@ -217,7 +217,6 @@ public class ListMoviesCommand implements Runnable {
         return movies.stream()
                 .filter(movie -> (title == null || movie.getTitle().toLowerCase().contains(title.toLowerCase()))
                         && (partialTitle == null || movie.getTitle().toLowerCase().contains(partialTitle.toLowerCase()))
-                        // Check for movies within a small range of the specified voteAverage
                         && (voteAverage == null || (movie.getVoteAverage() >= voteAverage - 0.1 && movie.getVoteAverage() <= voteAverage + 0.1))
                         && (minVoteAverage == null || movie.getVoteAverage() >= minVoteAverage)
                         && (maxVoteAverage == null || movie.getVoteAverage() <= maxVoteAverage)
@@ -227,6 +226,9 @@ public class ListMoviesCommand implements Runnable {
                         && (releaseDateBefore == null || movie.getReleaseDate().compareTo(releaseDateBefore) < 0))
                 .collect(Collectors.toList());
     }
+
+
+
 
 
 
@@ -270,7 +272,7 @@ public class ListMoviesCommand implements Runnable {
         List<Movie> allTheMovies = new ArrayList<>();
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode jsonNode = objectMapper.readTree(new File("app/src/text.json"));
+            JsonNode jsonNode = objectMapper.readTree(new File("src/text.json"));
             JsonNode resultsNode = jsonNode.get("results");
 
             for (JsonNode result : resultsNode) {
