@@ -454,7 +454,9 @@ public class AppController implements Initializable {
                         System.out.println("No recommendations found for the movie.");
                     }
                 }
+                return null;
             });
+
 
             // Add the GridPane to the dialog
             dialog.getDialogPane().setContent(gridPane);
