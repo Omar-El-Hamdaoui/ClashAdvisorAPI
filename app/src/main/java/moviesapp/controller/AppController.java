@@ -1,5 +1,7 @@
 package moviesapp.controller;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import javafx.concurrent.Task;
@@ -424,34 +426,33 @@ public class AppController implements Initializable {
                             "-fx-background-repeat: no-repeat;"
             );
 
-            // Create a button type for the video
+            // Add a button to view the video about the movie
+            ButtonType videoButtonType = new ButtonType("Video", ButtonBar.ButtonData.OTHER);
+            ButtonType recommendationButtonType = new ButtonType("Recommendations", ButtonBar.ButtonData.OTHER);
+            ButtonType closeButton = new ButtonType("Close", ButtonBar.ButtonData.CANCEL_CLOSE);
 
-            ButtonType videoButtonType = new ButtonType("Video", ButtonBar.ButtonData.LEFT);
-            ButtonType closeButtonType = new ButtonType("Close", ButtonBar.ButtonData.CANCEL_CLOSE);
-            dialog.getDialogPane().getButtonTypes().addAll(videoButtonType, closeButtonType);
+            dialog.getDialogPane().getButtonTypes().addAll(closeButton, videoButtonType, recommendationButtonType);
 
-            // Lookup for the video button in the dialog pane
-            Button videoButton = (Button) dialog.getDialogPane().lookupButton(videoButtonType);
-            videoButton.addEventFilter(ActionEvent.ACTION, event -> {
-                String videoUrl = getMovieVideoUrl(selectedMovie.getId()); // Assume this method gets the video URL
-                if (videoUrl != null && !videoUrl.isEmpty()) {
-                    // Open the video URL
-                    WebView webView = new WebView();
-                    webView.getEngine().load(videoUrl);
-
-                    Dialog<Void> videoDialog = new Dialog<>();
-                    videoDialog.setTitle("Watch Video");
-                    VBox vbox = new VBox(webView);
-                    videoDialog.getDialogPane().setContent(vbox);
-
-                    ButtonType closeVideoButton = new ButtonType("Close", ButtonBar.ButtonData.CANCEL_CLOSE);
-                    videoDialog.getDialogPane().getButtonTypes().add(closeVideoButton);
-
-                    videoDialog.showAndWait();
-                } else {
-                    // Handle the case where no video URL is found
-                    System.out.println("No video URL found for the movie.");
-                    event.consume(); // Prevent dialog from closing
+            // Handle the action of the video button
+            dialog.setResultConverter(buttonType -> {
+                if (buttonType == videoButtonType) {
+                    String videoUrl = getMovieVideoUrl(selectedMovie.getId()); // Assume `getId()` gets the movie's ID
+                    if (videoUrl != null && !videoUrl.isEmpty()) {
+                        openVideoInBrowser(videoUrl); // Open the video in a browser
+                    } else {
+                        // Handle the case where no video URL is found
+                        System.out.println("No video URL found for the movie.");
+                    }
+                } else if (buttonType == recommendationButtonType) {
+                    // Fetch and display recommendations for the selected movie
+                    List<Movie> recommendations = fetchRecommendations(selectedMovie.getId());
+                    if (!recommendations.isEmpty()) {
+                        // Show the recommendations in a new dialog or window
+                        showRecommendations(recommendations);
+                    } else {
+                        // Handle the case where no recommendations are found
+                        System.out.println("No recommendations found for the movie.");
+                    }
                 }
             });
 
@@ -463,9 +464,44 @@ public class AppController implements Initializable {
         }
     }
 
+    private List<Movie> fetchRecommendations(int movieId) {
+        List<Movie> recommendations = new ArrayList<>();
+        OkHttpClient client = new OkHttpClient();
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false); // Ignorer les propriétés inconnues
 
 
-
+        Request request = new Request.Builder()
+                .url("https://api.themoviedb.org/3/movie/" + movieId + "/recommendations?language=en-US&api_key=b8f844e585235d0341ba72bbc763ead2")
+                .get()
+                .build();
+        try {
+            Response response = client.newCall(request).execute();
+            if (response.isSuccessful() && response.body() != null) {
+                String responseBody = response.body().string();
+                JsonNode rootNode = objectMapper.readTree(responseBody);
+                JsonNode resultsNode = rootNode.path("results");
+                for (JsonNode node : resultsNode) {
+                    // Vérifier si media_type est présent dans l'objet JSON
+                    if (node.has("media_type")) {
+                        // Ignorer la propriété media_type lors de la désérialisation
+                        ((ObjectNode) node).remove("media_type");
+                    }
+                    // Désérialiser l'objet JSON en utilisant la classe Movie
+                    Movie movie = objectMapper.treeToValue(node, Movie.class);
+                    recommendations.add(movie);
+                }
+            } else {
+                System.out.println("Failed to get response from the API for recommendations for movie ID: " + movieId);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return recommendations;
+    }
+    private void showRecommendations(List<Movie> recommendations) {
+        moviesListView.getItems().setAll(recommendations);
+    }
 
 
 
