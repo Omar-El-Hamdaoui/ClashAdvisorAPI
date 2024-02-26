@@ -454,7 +454,6 @@ public class AppController implements Initializable {
                         System.out.println("No recommendations found for the movie.");
                     }
                 }
-                return null;
             });
 
             // Add the GridPane to the dialog
@@ -503,6 +502,7 @@ public class AppController implements Initializable {
     private void showRecommendations(List<Movie> recommendations) {
         moviesListView.getItems().setAll(recommendations);
     }
+
 
 
     private String getMovieDetails(Movie movie) {
