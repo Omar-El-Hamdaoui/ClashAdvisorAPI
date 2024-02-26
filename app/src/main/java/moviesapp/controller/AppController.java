@@ -5,6 +5,11 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.geometry.HPos;
+import javafx.scene.control.Button;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -14,6 +19,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import java.awt.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
@@ -419,32 +425,34 @@ public class AppController implements Initializable {
             );
 
             // Add a button to view the video about the movie
-            ButtonType videoButtonType = new ButtonType("Video about " + selectedMovie.getTitle(), ButtonBar.ButtonData.OTHER);
-            dialog.getDialogPane().getButtonTypes().addAll(videoButtonType, ButtonType.CLOSE);
+            ButtonType videoButtonType = new ButtonType("Video", ButtonBar.ButtonData.OTHER);
+            ButtonType closeButton = new ButtonType("Close", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+            dialog.getDialogPane().getButtonTypes().addAll(closeButton, videoButtonType);
 
             // Handle the action of the video button
-            final Button btVideo = (Button) dialog.getDialogPane().lookupButton(videoButtonType);
-            btVideo.addEventFilter(ActionEvent.ACTION, event -> {
-                event.consume(); // Prevent the dialog from closing
+            dialog.setResultConverter(buttonType -> {
+                if (buttonType == videoButtonType) {
+                    String videoUrl = getMovieVideoUrl(selectedMovie.getId()); // Assume `getId()` gets the movie's ID
+                    if (videoUrl != null && !videoUrl.isEmpty()) {
+                        WebView webView = new WebView();
+                        webView.getEngine().load(videoUrl);
 
-                String videoUrl = getMovieVideoUrl(selectedMovie.getId()); // Assume `getId()` gets the movie's ID
-                if (videoUrl != null && !videoUrl.isEmpty()) {
-                    WebView webView = new WebView();
-                    webView.getEngine().load(videoUrl);
-                    webView.setPrefSize(640, 390); // YouTube video default size, adjust as needed
+                        Dialog<Void> videoDialog = new Dialog<>();
+                        videoDialog.setTitle("Watch Video");
+                        VBox vbox = new VBox(webView);
+                        videoDialog.getDialogPane().setContent(vbox);
 
-                    Dialog<Void> videoDialog = new Dialog<>();
-                    videoDialog.setTitle("Watch Video");
-                    VBox vbox = new VBox(webView);
-                    videoDialog.getDialogPane().setContent(vbox);
-                    ButtonType closeButton = new ButtonType("Close", ButtonBar.ButtonData.CANCEL_CLOSE);
-                    videoDialog.getDialogPane().getButtonTypes().add(closeButton);
+                        ButtonType closeVideoButton = new ButtonType("Close", ButtonBar.ButtonData.CANCEL_CLOSE);
+                        videoDialog.getDialogPane().getButtonTypes().add(closeVideoButton);
 
-                    videoDialog.showAndWait();
-                } else {
-                    // Handle the case where no video URL is found
-                    System.out.println("No video URL found for the movie.");
+                       // videoDialog.showAndWait();
+                    } else {
+                        // Handle the case where no video URL is found
+                        System.out.println("No video URL found for the movie.");
+                    }
                 }
+                return null;
             });
 
             // Add the GridPane to the dialog
@@ -578,6 +586,14 @@ public class AppController implements Initializable {
         }
     }
 
+    private void openVideoInBrowser(String videoUrl) {
+        try {
+            Desktop.getDesktop().browse(new java.net.URI(videoUrl));
+        } catch (IOException | java.net.URISyntaxException e) {
+            e.printStackTrace();
+        }
+    }
+
     private String getMovieVideoUrl(int movieId) {
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
@@ -598,7 +614,9 @@ public class AppController implements Initializable {
                     String videoKey = node.path("key").asText();
                     if (videoKey != null && !videoKey.isEmpty()) {
                         // Assuming the video is hosted on YouTube
-                        return "https://www.youtube.com/watch?v=" + videoKey;
+                        String videoUrl = "https://www.youtube.com/watch?v=" + videoKey;
+                        openVideoInBrowser(videoUrl); // Open the video in a browser
+                        return videoUrl;
                     }
                 }
             } else {

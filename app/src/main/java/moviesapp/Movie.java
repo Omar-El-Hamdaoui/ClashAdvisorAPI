@@ -151,6 +151,7 @@ public class Movie {
         this.favorite = favorite;
     }
 
+
     @Override
     public String toString() {
         return "The movie Is '"+ title +"',"+ '\n'+
