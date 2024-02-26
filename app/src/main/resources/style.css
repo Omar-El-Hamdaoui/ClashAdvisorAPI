@@ -107,7 +107,7 @@
 }
 
 .combo-box .list-cell:hover {
-    -fx-background-color: white;
+    -fx-background-color: #820000;
 }
 
 .combo-box .list-cell:filled:selected, .combo-box .list-cell:filled:selected:hover {
