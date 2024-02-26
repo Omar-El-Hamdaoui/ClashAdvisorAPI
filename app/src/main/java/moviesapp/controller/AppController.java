@@ -45,6 +45,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
 
 
 public class AppController implements Initializable {
@@ -675,6 +679,36 @@ public class AppController implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    public String fetchMovieDirector(int movieId) {
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url("https://api.themoviedb.org/3/movie/" + movieId + "/credits?api_key=b8f844e585235d0341ba72bbc763ead2")
+                .get()
+                .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+            if (response.isSuccessful() && response.body() != null) {
+                String responseBody = response.body().string();
+                JSONParser parser = new JSONParser();
+                JSONObject jsonObject = (JSONObject) parser.parse(responseBody);
+                JSONArray crewArray = (JSONArray) jsonObject.get("crew");
+
+                for (Object crewObj : crewArray) {
+                    JSONObject crewMember = (JSONObject) crewObj;
+                    String job = (String) crewMember.get("job");
+                    if ("Director".equals(job)) {
+                        return (String) crewMember.get("name");
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (org.json.simple.parser.ParseException e) {
+            e.printStackTrace();
+        }
+        return "Director Not Found";
     }
 
 }

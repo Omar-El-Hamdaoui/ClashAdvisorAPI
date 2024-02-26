@@ -40,6 +40,9 @@ dependencies {
     //this 2 dependecies are for javafx
     implementation 'org.openjfx:javafx-controls:17'
     implementation 'org.openjfx:javafx-fxml:17'
+
+    implementation 'org.json:json:20210307'
+
 }
 
 
