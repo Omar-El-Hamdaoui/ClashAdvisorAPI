@@ -28,6 +28,7 @@ import javafx.scene.control.*;
 import moviesapp.Movie;
 
 import java.net.URL;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -499,8 +500,9 @@ public class AppController implements Initializable {
 
         // Utiliser le cache d'images pour éviter de recharger les mêmes images plusieurs fois
         Cache<String, Image> imageCache = Caffeine.newBuilder()
-                .maximumSize(100) // Limite le nombre d'images en cache
-                .expireAfterWrite(10, TimeUnit.MINUTES) // Définit la durée de vie de chaque image en cache
+                .maximumSize(100) // Consider adjusting or using .maximumWeight() with a weigher based on image sizes.
+                .expireAfterAccess(Duration.ofMinutes(10)) // Adjust based on use case.
+                .softValues() // Consider using softValues() for memory-sensitive caching.
                 .build();
 
         String posterUrl = "https://image.tmdb.org/t/p/w500" + movie.getPosterPath();
