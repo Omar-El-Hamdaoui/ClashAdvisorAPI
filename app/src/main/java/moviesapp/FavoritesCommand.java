@@ -67,7 +67,7 @@ public class FavoritesCommand {
     protected void saveFavoritesToFile() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(FAVORITES_FILE))) {
             for (Movie movie : favoriteMovies) {
-                writer.write(movie.getTitle());
+                writer.write(movie.toString());
                 writer.newLine();
             }
         } catch (IOException e) {
