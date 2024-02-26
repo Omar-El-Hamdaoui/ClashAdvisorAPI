@@ -3,11 +3,13 @@ package moviesapp.controller;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.geometry.HPos;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 
+import javafx.scene.web.WebView;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -415,17 +417,43 @@ public class AppController implements Initializable {
                             "-fx-background-repeat: no-repeat;"
             );
 
+            // Add a button to view the video about the movie
+            ButtonType videoButtonType = new ButtonType("Video about " + selectedMovie.getTitle(), ButtonBar.ButtonData.OTHER);
+            dialog.getDialogPane().getButtonTypes().addAll(videoButtonType, ButtonType.CLOSE);
+
+            // Handle the action of the video button
+            final Button btVideo = (Button) dialog.getDialogPane().lookupButton(videoButtonType);
+            btVideo.addEventFilter(ActionEvent.ACTION, event -> {
+                event.consume(); // Prevent the dialog from closing
+
+                String videoUrl = getMovieVideoUrl(selectedMovie.getId()); // Assume `getId()` gets the movie's ID
+                if (videoUrl != null && !videoUrl.isEmpty()) {
+                    WebView webView = new WebView();
+                    webView.getEngine().load(videoUrl);
+                    webView.setPrefSize(640, 390); // YouTube video default size, adjust as needed
+
+                    Dialog<Void> videoDialog = new Dialog<>();
+                    videoDialog.setTitle("Watch Video");
+                    VBox vbox = new VBox(webView);
+                    videoDialog.getDialogPane().setContent(vbox);
+                    ButtonType closeButton = new ButtonType("Close", ButtonBar.ButtonData.CANCEL_CLOSE);
+                    videoDialog.getDialogPane().getButtonTypes().add(closeButton);
+
+                    videoDialog.showAndWait();
+                } else {
+                    // Handle the case where no video URL is found
+                    System.out.println("No video URL found for the movie.");
+                }
+            });
+
             // Add the GridPane to the dialog
             dialog.getDialogPane().setContent(gridPane);
-
-            // Add a button to close the dialog
-            ButtonType closeButton = new ButtonType("Close", ButtonBar.ButtonData.OK_DONE);
-            dialog.getDialogPane().getButtonTypes().add(closeButton);
 
             // Show the custom dialog
             dialog.showAndWait();
         }
     }
+
 
 
 
@@ -547,6 +575,40 @@ public class AppController implements Initializable {
             }
         }
     }
+
+    private String getMovieVideoUrl(int movieId) {
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url("https://api.themoviedb.org/3/movie/" + movieId + "/videos?language=en-US&api_key=b8f844e585235d0341ba72bbc763ead2")
+                .get()
+                .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+            if (response.isSuccessful() && response.body() != null) {
+                String responseBody = response.body().string();
+                ObjectMapper objectMapper = new ObjectMapper();
+                JsonNode rootNode = objectMapper.readTree(responseBody);
+                JsonNode resultsNode = rootNode.path("results");
+
+                // Iterate through the results to find the first video key
+                for (JsonNode node : resultsNode) {
+                    String videoKey = node.path("key").asText();
+                    if (videoKey != null && !videoKey.isEmpty()) {
+                        // Assuming the video is hosted on YouTube
+                        return "https://www.youtube.com/watch?v=" + videoKey;
+                    }
+                }
+            } else {
+                System.out.println("Failed to get response from the API for fetching video URL.");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
 
     private void clearFavoritesFile() {
         try (PrintWriter writer = new PrintWriter(favoritesFilePath, StandardCharsets.UTF_8)) {
