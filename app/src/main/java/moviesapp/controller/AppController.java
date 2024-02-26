@@ -424,35 +424,35 @@ public class AppController implements Initializable {
                             "-fx-background-repeat: no-repeat;"
             );
 
-            // Add a button to view the video about the movie
-            ButtonType videoButtonType = new ButtonType("Video", ButtonBar.ButtonData.OTHER);
-            ButtonType closeButton = new ButtonType("Close", ButtonBar.ButtonData.CANCEL_CLOSE);
+            // Create a button type for the video
 
-            dialog.getDialogPane().getButtonTypes().addAll(closeButton, videoButtonType);
+            ButtonType videoButtonType = new ButtonType("Video", ButtonBar.ButtonData.LEFT);
+            ButtonType closeButtonType = new ButtonType("Close", ButtonBar.ButtonData.CANCEL_CLOSE);
+            dialog.getDialogPane().getButtonTypes().addAll(videoButtonType, closeButtonType);
 
-            // Handle the action of the video button
-            dialog.setResultConverter(buttonType -> {
-                if (buttonType == videoButtonType) {
-                    String videoUrl = getMovieVideoUrl(selectedMovie.getId()); // Assume `getId()` gets the movie's ID
-                    if (videoUrl != null && !videoUrl.isEmpty()) {
-                        WebView webView = new WebView();
-                        webView.getEngine().load(videoUrl);
+            // Lookup for the video button in the dialog pane
+            Button videoButton = (Button) dialog.getDialogPane().lookupButton(videoButtonType);
+            videoButton.addEventFilter(ActionEvent.ACTION, event -> {
+                String videoUrl = getMovieVideoUrl(selectedMovie.getId()); // Assume this method gets the video URL
+                if (videoUrl != null && !videoUrl.isEmpty()) {
+                    // Open the video URL
+                    WebView webView = new WebView();
+                    webView.getEngine().load(videoUrl);
 
-                        Dialog<Void> videoDialog = new Dialog<>();
-                        videoDialog.setTitle("Watch Video");
-                        VBox vbox = new VBox(webView);
-                        videoDialog.getDialogPane().setContent(vbox);
+                    Dialog<Void> videoDialog = new Dialog<>();
+                    videoDialog.setTitle("Watch Video");
+                    VBox vbox = new VBox(webView);
+                    videoDialog.getDialogPane().setContent(vbox);
 
-                        ButtonType closeVideoButton = new ButtonType("Close", ButtonBar.ButtonData.CANCEL_CLOSE);
-                        videoDialog.getDialogPane().getButtonTypes().add(closeVideoButton);
+                    ButtonType closeVideoButton = new ButtonType("Close", ButtonBar.ButtonData.CANCEL_CLOSE);
+                    videoDialog.getDialogPane().getButtonTypes().add(closeVideoButton);
 
-                       // videoDialog.showAndWait();
-                    } else {
-                        // Handle the case where no video URL is found
-                        System.out.println("No video URL found for the movie.");
-                    }
+                    videoDialog.showAndWait();
+                } else {
+                    // Handle the case where no video URL is found
+                    System.out.println("No video URL found for the movie.");
+                    event.consume(); // Prevent dialog from closing
                 }
-                return null;
             });
 
             // Add the GridPane to the dialog
@@ -462,6 +462,7 @@ public class AppController implements Initializable {
             dialog.showAndWait();
         }
     }
+
 
 
 
