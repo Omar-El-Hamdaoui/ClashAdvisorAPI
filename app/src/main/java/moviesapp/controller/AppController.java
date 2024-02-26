@@ -443,7 +443,16 @@ public class AppController implements Initializable {
                         // Handle the case where no video URL is found
                         System.out.println("No video URL found for the movie.");
                     }
-
+                } else if (buttonType == recommendationButtonType) {
+                    // Fetch and display recommendations for the selected movie
+                    List<Movie> recommendations = fetchRecommendations(selectedMovie.getId());
+                    if (!recommendations.isEmpty()) {
+                        // Show the recommendations in a new dialog or window
+                        showRecommendations(recommendations);
+                    } else {
+                        // Handle the case where no recommendations are found
+                        System.out.println("No recommendations found for the movie.");
+                    }
                 }
                 return null;
             });
