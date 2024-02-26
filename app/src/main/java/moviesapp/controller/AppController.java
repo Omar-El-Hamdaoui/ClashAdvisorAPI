@@ -491,6 +491,9 @@ public class AppController implements Initializable {
         }
         return recommendations;
     }
+    private void showRecommendations(List<Movie> recommendations) {
+        moviesListView.getItems().setAll(recommendations);
+    }
 
 
     private String getMovieDetails(Movie movie) {
