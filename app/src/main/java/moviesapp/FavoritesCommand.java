@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.*;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class FavoritesCommand {
@@ -14,12 +15,6 @@ public class FavoritesCommand {
 
     public FavoritesCommand() {
         this.favoriteMovies = loadFavoritesFromFile();
-    }
-
-    public void addFavoriteMovie(Movie movie) {
-        favoriteMovies.add(movie);
-        saveFavoritesToFile();
-        System.out.println("Movie added to favorites: " + movie.getTitle());
     }
 
     public void removeFavoriteMovie(Movie movie) {
@@ -56,6 +51,17 @@ public class FavoritesCommand {
         }
         return favorites;
     }
+    public void addFavoriteMovie(Movie movie) {
+        boolean added = favoriteMovies.add(movie);
+        if (added) {
+            System.out.println("Movie added to favorites: " + movie.getTitle());
+            saveFavoritesToFile(); // Save changes to file
+        } else {
+            System.out.println("Movie is already in favorites: " + movie.getTitle());
+        }
+    }
+
+
 
 
     protected void saveFavoritesToFile() {
@@ -65,6 +71,18 @@ public class FavoritesCommand {
                 writer.newLine();
             }
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public void saveFavoritesToFile(String userName, List<Movie> movies) {
+        try {
+            PrintWriter writer = new PrintWriter(userName + ".txt");
+            for (Movie movie : movies) {
+                writer.println(movie);
+            }
+            writer.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("Error: File not found.");
             e.printStackTrace();
         }
     }

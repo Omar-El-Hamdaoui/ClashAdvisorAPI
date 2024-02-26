@@ -229,11 +229,13 @@ public class ListMoviesCommand implements Runnable {
                 }
             }
 
-            System.out.println("Do you want to save the favorites to a file? (yes/no)");
+            System.out.println("Do you want to save the results to a file? (yes/no)");
             input = scanner.nextLine().trim();
             if ("yes".equalsIgnoreCase(input)) {
-                favoritesCommand.saveFavoritesToFile();
-                System.out.println("Favorites saved to file.");
+                System.out.println("Please enter your name:");
+                String userName = scanner.nextLine().trim();
+                favoritesCommand.saveFavoritesToFile(userName,movies);
+                System.out.println("Favorites saved to file with the name: " + userName + ".txt");
             }
 
             System.out.println("Do you want to add criteria to search? (yes/no)");
@@ -254,6 +256,9 @@ public class ListMoviesCommand implements Runnable {
     private Set<Movie> loadFavoritesFromFile() {
         return favoritesCommand.loadFavoritesFromFile();
     }
+
+
+
     private boolean movieContainsAnyGenre(Movie movie, List<Integer> genreIdsToSearch) {
         for (int genreId : genreIdsToSearch) {
             for (int movieGenreId : movie.getGenreIds()) {
