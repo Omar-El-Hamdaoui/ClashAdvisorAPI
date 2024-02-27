@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.geometry.HPos;
@@ -22,6 +23,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 import java.awt.*;
+import java.awt.ScrollPane;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
@@ -44,6 +46,10 @@ import java.util.stream.Collectors;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 
 
@@ -75,7 +81,7 @@ public class AppController implements Initializable {
     private Set<Movie> favoriteMovies = new HashSet<>();
     private int currentUiPage = 1;
     private final int apiPagesPerUiPage = 1; // Nombre de pages de l'API chargées par page de l'UI
-    private final int totalApiPages = 100; // Total des pages de l'API à charger
+    private final int totalApiPages = 500; // Total des pages de l'API à charger
     private final int totalPagesUi = totalApiPages / apiPagesPerUiPage;
     private Set<Movie> allMovies = new HashSet<>();
     private Map<String, Integer> genreNameToIdMap=Genre.getGenreMap();
@@ -364,10 +370,13 @@ public class AppController implements Initializable {
         loadMovies();
         clearFavoritesFile();
     }
-    @FXML
     private void handleMovieClick() {
         Movie selectedMovie = moviesListView.getSelectionModel().getSelectedItem();
         if (selectedMovie != null) {
+            // Fetch director's name
+            String directorName = String.valueOf(fetchMovieDirector(selectedMovie.getId()));
+            System.out.println("Director Name: " + directorName); // Debug print
+
             // Create a new custom dialog
             Dialog<Void> dialog = new Dialog<>();
             dialog.setTitle("Movie Details");
@@ -375,11 +384,13 @@ public class AppController implements Initializable {
             // Remove default icon (information icon)
             dialog.setGraphic(null);
 
-            // Set the header with movie title
+            // Set the header with movie title and director's name
             HBox headerBox = new HBox();
             Label titleLabel = new Label(selectedMovie.getTitle());
+            Label directorLabel = new Label("Director: " + directorName);
             titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;");
-            headerBox.getChildren().add(titleLabel);
+            directorLabel.setStyle("-fx-text-fill: white;");
+            headerBox.getChildren().addAll(titleLabel, new Separator(), directorLabel);
             headerBox.setStyle("-fx-background-color: #37474F; -fx-padding: 10;");
             dialog.getDialogPane().setHeader(headerBox);
 
@@ -426,17 +437,17 @@ public class AppController implements Initializable {
                             "-fx-background-repeat: no-repeat;"
             );
 
-            // Add a button to view the video about the movie
+            // Add buttons to view the video about the movie, recommendations, and director's movies
             ButtonType videoButtonType = new ButtonType("Video", ButtonBar.ButtonData.OTHER);
             ButtonType recommendationButtonType = new ButtonType("Recommendations", ButtonBar.ButtonData.OTHER);
+            ButtonType directorsMoviesButtonType = new ButtonType("Director's Movies", ButtonBar.ButtonData.OTHER); // New button for director's movies
             ButtonType closeButton = new ButtonType("Close", ButtonBar.ButtonData.CANCEL_CLOSE);
 
-            dialog.getDialogPane().getButtonTypes().addAll(closeButton, videoButtonType, recommendationButtonType);
+            dialog.getDialogPane().getButtonTypes().addAll(closeButton, videoButtonType, recommendationButtonType, directorsMoviesButtonType); // Add new button types
 
-            // Handle the action of the video button
             dialog.setResultConverter(buttonType -> {
                 if (buttonType == videoButtonType) {
-                    String videoUrl = getMovieVideoUrl(selectedMovie.getId()); // Assume `getId()` gets the movie's ID
+                    String videoUrl = getMovieVideoUrl(selectedMovie.getId());
                     if (videoUrl != null && !videoUrl.isEmpty()) {
                         openVideoInBrowser(videoUrl); // Open the video in a browser
                     } else {
@@ -453,10 +464,18 @@ public class AppController implements Initializable {
                         // Handle the case where no recommendations are found
                         System.out.println("No recommendations found for the movie.");
                     }
+                } else if (buttonType == directorsMoviesButtonType) {
+                    int directorId = fetchDirectorId(selectedMovie.getId()); // Fetch the director's ID
+                    List<Movie> directorsMovies = fetchMoviesByDirectorId(directorId); // Fetch movies by this director
+                    if (!directorsMovies.isEmpty()) {
+                        // Show the director's movies in a new dialog or window
+                        showDirectorsMovies(directorsMovies, directorName); // You'll need to implement this method
+                    } else {
+                        System.out.println("No movies found for the director.");
+                    }
                 }
                 return null;
             });
-
 
             // Add the GridPane to the dialog
             dialog.getDialogPane().setContent(gridPane);
@@ -465,6 +484,8 @@ public class AppController implements Initializable {
             dialog.showAndWait();
         }
     }
+
+
 
     private List<Movie> fetchRecommendations(int movieId) {
         List<Movie> recommendations = new ArrayList<>();
@@ -676,5 +697,108 @@ public class AppController implements Initializable {
             e.printStackTrace();
         }
     }
+    public String fetchMovieDirector(int movieId) {
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url("https://api.themoviedb.org/3/movie/" + movieId + "/credits?api_key=b8f844e585235d0341ba72bbc763ead2")
+                .get()
+                .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+            if (response.isSuccessful() && response.body() != null) {
+                String responseBody = response.body().string();
+                JSONParser parser = new JSONParser();
+                JSONObject jsonObject = (JSONObject) parser.parse(responseBody);
+                JSONArray crewArray = (JSONArray) jsonObject.get("crew");
+
+                for (Object crewObj : crewArray) {
+                    JSONObject crewMember = (JSONObject) crewObj;
+                    String job = (String) crewMember.get("job");
+                    if ("Director".equals(job)) {
+                        return (String) crewMember.get("name");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "Director Not Found"; // Return this if director's name not found
+    }
+    private List<Movie> fetchMoviesByDirectorId(int directorId) {
+        List<Movie> directorMovies = new ArrayList<>();
+        OkHttpClient client = new OkHttpClient();
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false); // Ignore unknown properties
+
+        Request request = new Request.Builder()
+                .url("https://api.themoviedb.org/3/person/" + directorId + "/movie_credits?api_key=b8f844e585235d0341ba72bbc763ead2")
+                .get()
+                .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+            if (response.isSuccessful() && response.body() != null) {
+                String responseBody = response.body().string();
+                JsonNode rootNode = objectMapper.readTree(responseBody);
+                JsonNode crewNode = rootNode.path("crew");
+
+                for (JsonNode node : crewNode) {
+                    if ("Director".equals(node.path("job").asText())) {
+                        Movie movie = objectMapper.treeToValue(node, Movie.class);
+                        if (!(movie.getVoteCount()==0)) {
+                            directorMovies.add(movie);
+                        }
+
+                    }
+                }
+            } else {
+                System.out.println("Failed to get response from the API for director ID: " + directorId);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return directorMovies;
+    }
+
+
+
+
+    public int fetchDirectorId(int movieId) {
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url("https://api.themoviedb.org/3/movie/" + movieId + "/credits?api_key=b8f844e585235d0341ba72bbc763ead2")
+                .get()
+                .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+            if (response.isSuccessful() && response.body() != null) {
+                String responseBody = response.body().string();
+                JSONParser parser = new JSONParser();
+                JSONObject jsonObject = (JSONObject) parser.parse(responseBody);
+                JSONArray crewArray = (JSONArray) jsonObject.get("crew");
+
+                for (Object crewObj : crewArray) {
+                    JSONObject crewMember = (JSONObject) crewObj;
+                    String job = (String) crewMember.get("job");
+                    if ("Director".equals(job)) {
+                        return ((Long) crewMember.get("id")).intValue(); // Casting long to int
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1; // Return -1 if director not found or an error occurs
+    }
+
+    public void showDirectorsMovies(List<Movie> directorsMovies, String directorName) {
+         moviesListView.getItems().setAll(directorsMovies);
+
+    }
+
+
+
 
 }
