@@ -198,13 +198,16 @@ public class AppController implements Initializable {
         // Since fromYear and toYear are used in a lambda expression, they must be effectively final
         final String finalFromYear = fromYear;
         final String finalToYear = toYear;
+        if ( Integer.parseInt(finalFromYear)<0 || Integer.parseInt(finalToYear) < 0){
+            return null;
+        }
 
         return allMovies.stream()
                 .filter(movie -> name == null || name.isEmpty() || movie.getTitle().toLowerCase().contains(name.toLowerCase()))
                 .filter(movie -> genreId == null || Arrays.stream(movie.getGenreIds()).anyMatch(id -> id == genreId))
                 .filter(movie -> rating == 0 || movie.getVoteAverage() >= rating)
                 .filter(movie -> {
-                    if (finalFromYear != null && !finalFromYear.isEmpty() && finalToYear != null && !finalToYear.isEmpty()) {
+                    if (finalFromYear != null && !finalFromYear.isEmpty() && finalToYear != null && !finalToYear.isEmpty() ) {
                         int year = extractYear(movie.getReleaseDate());
                         int from = Integer.parseInt(finalFromYear);
                         int to = Integer.parseInt(finalToYear);
