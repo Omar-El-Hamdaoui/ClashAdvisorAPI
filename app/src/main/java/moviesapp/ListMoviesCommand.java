@@ -94,9 +94,10 @@ public class ListMoviesCommand implements Runnable {
     public void setTitle(String title){
         this.title = title;
     }
+
     public List<Movie> filterMovies(List<Movie> movies) {
         return movies.stream()
-                .filter(movie -> (title == null || movie.getTitle().toLowerCase().contains(title.toLowerCase()))
+                .filter(movie -> (title == null || movie.getTitle().equalsIgnoreCase(title))
                         && (partialTitle == null || movie.getTitle().toLowerCase().contains(partialTitle.toLowerCase()))
                         && (voteAverage == null || (movie.getVoteAverage() >= voteAverage - 0.1 && movie.getVoteAverage() <= voteAverage + 0.1))
                         && (minVoteAverage == null || movie.getVoteAverage() >= minVoteAverage)
