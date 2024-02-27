@@ -375,7 +375,6 @@ public class AppController implements Initializable {
         if (selectedMovie != null) {
             // Fetch director's name
             String directorName = String.valueOf(fetchMovieDirector(selectedMovie.getId()));
-            System.out.println("Director Name: " + directorName); // Debug print
 
             // Create a new custom dialog
             Dialog<Void> dialog = new Dialog<>();
@@ -385,12 +384,12 @@ public class AppController implements Initializable {
             dialog.setGraphic(null);
 
             // Set the header with movie title and director's name
-            HBox headerBox = new HBox();
+            VBox headerBox = new VBox();
             Label titleLabel = new Label(selectedMovie.getTitle());
             Label directorLabel = new Label("Director: " + directorName);
             titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;");
-            directorLabel.setStyle("-fx-text-fill: white;");
-            headerBox.getChildren().addAll(titleLabel, new Separator(), directorLabel);
+            directorLabel.setStyle("-fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold;");
+            headerBox.getChildren().addAll(titleLabel, directorLabel);
             headerBox.setStyle("-fx-background-color: #37474F; -fx-padding: 10;");
             dialog.getDialogPane().setHeader(headerBox);
 
@@ -675,7 +674,6 @@ public class AppController implements Initializable {
                     if (videoKey != null && !videoKey.isEmpty()) {
                         // Assuming the video is hosted on YouTube
                         String videoUrl = "https://www.youtube.com/watch?v=" + videoKey;
-                        openVideoInBrowser(videoUrl); // Open the video in a browser
                         return videoUrl;
                     }
                 }
