@@ -9,10 +9,14 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.HttpClientErrorException;
 
+
+import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+
 
 
 @Service
@@ -25,43 +29,56 @@ public class ClashService {
 
     public PlayerDto getPlayerInfo(String tag) {
         RestTemplate restTemplate = new RestTemplate();
+
         if (!tag.startsWith("#")) {
             tag = "#" + tag;
         }
 
-        // ⚠️ On encode ici une seule fois
-        String encodedTag = URLEncoder.encode(tag, StandardCharsets.UTF_8);
-        String url = "https://api.clashofclans.com/v1/players/" + encodedTag;
+        // ❌ PAS de URLEncoder ici
+        String url = "https://api.clashofclans.com/v1/players/" + tag;
 
-        System.out.println(">>> URL FINALE ENVOYÉE: " + url); // debug
+        System.out.println(">>> URL ENVOYÉE = " + url); // debug
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", apiToken);
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
-        ResponseEntity<Map> response = restTemplate.exchange(
-                url, HttpMethod.GET, entity, Map.class
-        );
+        try {
+            String encodedTag = URLEncoder.encode(tag, StandardCharsets.UTF_8);
+            URI uri = new URI("https://api.clashofclans.com/v1/players/" + encodedTag);
 
-        Map<String, Object> body = response.getBody();
+            System.out.println("URL finale = " + uri.toString());
 
-        PlayerDto player = new PlayerDto();
-        player.setName((String) body.get("name"));
-        player.setTownHallLevel((int) body.get("townHallLevel"));
-        player.setExpLevel((int) body.get("expLevel"));
-        player.setTrophies((int) body.get("trophies"));
 
-        Map<String, Object> clan = (Map<String, Object>) body.get("clan");
-        if (clan != null) {
-            player.setClanName((String) clan.get("name"));
+            ResponseEntity<Map> response = restTemplate.exchange(uri, HttpMethod.GET, entity, Map.class);
+            Map<String, Object> body = response.getBody();
+
+            // Parse les données du joueur
+            PlayerDto player = new PlayerDto();
+            player.setName((String) body.get("name"));
+            player.setTownHallLevel((int) body.get("townHallLevel"));
+            player.setExpLevel((int) body.get("expLevel"));
+            player.setTrophies((int) body.get("trophies"));
+
+            Map<String, Object> clan = (Map<String, Object>) body.get("clan");
+            if (clan != null) {
+                player.setClanName((String) clan.get("name"));
+            }
+
+            return player;
+
+        } catch (HttpClientErrorException e) {
+            System.out.println("❌ Erreur HTTP : " + e.getStatusCode());
+            System.out.println("❌ Message : " + e.getResponseBodyAsString());
+            throw new RuntimeException("Erreur lors de l'appel à l'API Clash", e);
+
+        } catch (Exception e) {
+            System.out.println("💥 Autre erreur : " + e.getMessage());
+            throw new RuntimeException("Erreur inconnue", e);
         }
 
-        return player;
+
     }
-
-
-
-
 
 }
 
