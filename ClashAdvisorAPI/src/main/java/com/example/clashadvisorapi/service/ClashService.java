@@ -1,6 +1,7 @@
 package com.example.clashadvisorapi.service;
 
 
+import com.example.clashadvisorapi.dto.PlayerDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -22,23 +23,45 @@ public class ClashService {
 
     private final String BASE_URL = "https://api.clashofclans.com/v1/players/";
 
-    public Map<String, Object> getPlayerInfo(String tag) {
+    public PlayerDto getPlayerInfo(String tag) {
         RestTemplate restTemplate = new RestTemplate();
+        if (!tag.startsWith("#")) {
+            tag = "#" + tag;
+        }
+
+        // ⚠️ On encode ici une seule fois
+        String encodedTag = URLEncoder.encode(tag, StandardCharsets.UTF_8);
+        String url = "https://api.clashofclans.com/v1/players/" + encodedTag;
+
+        System.out.println(">>> URL FINALE ENVOYÉE: " + url); // debug
+
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", apiToken);
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
-        String encodedTag = URLEncoder.encode(tag, StandardCharsets.UTF_8);
-        String url = BASE_URL + encodedTag;
-
         ResponseEntity<Map> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                entity,
-                Map.class
+                url, HttpMethod.GET, entity, Map.class
         );
 
-        return response.getBody();
+        Map<String, Object> body = response.getBody();
+
+        PlayerDto player = new PlayerDto();
+        player.setName((String) body.get("name"));
+        player.setTownHallLevel((int) body.get("townHallLevel"));
+        player.setExpLevel((int) body.get("expLevel"));
+        player.setTrophies((int) body.get("trophies"));
+
+        Map<String, Object> clan = (Map<String, Object>) body.get("clan");
+        if (clan != null) {
+            player.setClanName((String) clan.get("name"));
+        }
+
+        return player;
     }
+
+
+
+
+
 }
 

@@ -9,9 +9,6 @@ public class ClashAdvisorAPI {
 
 	public static void main(String[] args) {
 		SpringApplication.run(ClashAdvisorAPI.class, args);
-		System.out.println("New Begin");
-		RestTemplate restTemplate = new RestTemplate();
-		System.out.println("RestTemplate OK ✅");
 	}
 
 }

@@ -1,7 +1,7 @@
 package com.example.clashadvisorapi.controller;
 
 import com.example.clashadvisorapi.service.ClashService;
-
+import com.example.clashadvisorapi.dto.PlayerDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +16,7 @@ public class VillageController {
     }
 
     @GetMapping("/info/{tag}")
-    public ResponseEntity<?> getVillageInfo(@PathVariable String tag) {
+    public ResponseEntity<PlayerDto> getVillageInfo(@PathVariable String tag) {
         return ResponseEntity.ok(clashService.getPlayerInfo(tag));
     }
 }
