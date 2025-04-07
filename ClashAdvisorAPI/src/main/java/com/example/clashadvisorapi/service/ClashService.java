@@ -29,7 +29,6 @@ public class ClashService {
 
 
 
-
     public PlayerDto getPlayerInfo(String tag) {
         RestTemplate restTemplate = new RestTemplate();
 
@@ -50,7 +49,6 @@ public class ClashService {
             String encodedTag = URLEncoder.encode(tag, StandardCharsets.UTF_8);
             URI uri = new URI("https://api.clashofclans.com/v1/players/" + encodedTag);
 
-            System.out.println("URL finale = " + uri.toString());
 
 
             ResponseEntity<Map> response = restTemplate.exchange(uri, HttpMethod.GET, entity, Map.class);
