@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Village Info</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+<h1>Infos du joueur</h1>
+<ul>
+    <li><strong>Nom :</strong> <span th:text="${player.name}"></span></li>
+    <li><strong>Niveau HDV :</strong> <span th:text="${player.townHallLevel}"></span></li>
+    <li><strong>Niveau XP :</strong> <span th:text="${player.expLevel}"></span></li>
+    <li><strong>Trophées :</strong> <span th:text="${player.trophies}"></span></li>
+    <li><strong>Clan :</strong> <span th:text="${player.clanName} ?: 'Sans clan'"></span></li>
+</ul>
+</body>
+</html>
