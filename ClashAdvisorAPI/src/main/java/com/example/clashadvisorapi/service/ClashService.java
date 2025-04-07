@@ -34,7 +34,7 @@ public class ClashService {
             tag = "#" + tag;
         }
 
-        // ❌ PAS de URLEncoder ici
+        // PAS de URLEncoder ici
         String url = "https://api.clashofclans.com/v1/players/" + tag;
 
         System.out.println(">>> URL ENVOYÉE = " + url); // debug
@@ -68,8 +68,8 @@ public class ClashService {
             return player;
 
         } catch (HttpClientErrorException e) {
-            System.out.println("❌ Erreur HTTP : " + e.getStatusCode());
-            System.out.println("❌ Message : " + e.getResponseBodyAsString());
+            System.out.println("Erreur HTTP : " + e.getStatusCode());
+            System.out.println("Message : " + e.getResponseBodyAsString());
             throw new RuntimeException("Erreur lors de l'appel à l'API Clash", e);
 
         } catch (Exception e) {
