@@ -17,11 +17,8 @@ public class VillageController {
         this.clashService = clashService;
     }
 
-    @GetMapping("/view/{tag}")
-    public String showVillageInfo(@PathVariable String tag, Model model) {
-        PlayerDto player = clashService.getPlayerInfo(tag);
-        model.addAttribute("player", player);
-        return "village-info"; // ⇨ village-info.html dans /templates
+    @GetMapping("/info/{tag}")  // ⚠️ route API REST
+    public ResponseEntity<PlayerDto> getVillageInfo(@PathVariable String tag) {
+        return ResponseEntity.ok(clashService.getPlayerInfo(tag));
     }
 }
-
