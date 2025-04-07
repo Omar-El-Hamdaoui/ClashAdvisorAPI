@@ -27,6 +27,9 @@ public class ClashService {
 
     private final String BASE_URL = "https://api.clashofclans.com/v1/players/";
 
+
+
+
     public PlayerDto getPlayerInfo(String tag) {
         RestTemplate restTemplate = new RestTemplate();
 
