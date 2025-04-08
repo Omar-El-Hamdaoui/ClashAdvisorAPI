@@ -3,6 +3,7 @@ package com.example.clashadvisorapi.service;
 
 import com.example.clashadvisorapi.dto.PlayerDto;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -79,6 +80,23 @@ public class ClashService {
         }
 
 
+    }
+    public ByteArrayResource exportPlayerAsCsv(String tag) {
+        PlayerDto player = getPlayerInfo(tag);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Nom,Niveau HDV,Niveau XP,Trophées,Clan\n");
+        sb.append(String.format(
+                "%s,%d,%d,%d,%s",
+                player.getName(),
+                player.getTownHallLevel(),
+                player.getExpLevel(),
+                player.getTrophies(),
+                player.getClanName() != null ? player.getClanName() : ""
+        ));
+
+        byte[] csvBytes = sb.toString().getBytes(StandardCharsets.UTF_8);
+        return new ByteArrayResource(csvBytes);
     }
 
 }

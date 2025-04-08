@@ -2,9 +2,10 @@ package com.example.clashadvisorapi.controller;
 
 import com.example.clashadvisorapi.service.ClashService;
 import com.example.clashadvisorapi.dto.PlayerDto;
+import org.springframework.core.io.ByteArrayResource;
+
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,8 +18,14 @@ public class VillageController {
         this.clashService = clashService;
     }
 
-    @GetMapping("/info/{tag}")  // ⚠️ route API REST
+    @GetMapping("/info/{tag}")  //  route API REST
     public ResponseEntity<PlayerDto> getVillageInfo(@PathVariable String tag) {
         return ResponseEntity.ok(clashService.getPlayerInfo(tag));
     }
+
+    @GetMapping("/export/{tag}")
+    public ByteArrayResource exportPlayerInfo(@PathVariable String tag) {
+        return clashService.exportPlayerAsCsv(tag);
+    }
+
 }
