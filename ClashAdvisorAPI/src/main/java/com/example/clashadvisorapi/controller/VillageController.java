@@ -23,9 +23,5 @@ public class VillageController {
         return ResponseEntity.ok(clashService.getPlayerInfo(tag));
     }
 
-    @GetMapping("/export/{tag}")
-    public ByteArrayResource exportPlayerInfo(@PathVariable String tag) {
-        return clashService.exportPlayerAsCsv(tag);
-    }
 
 }

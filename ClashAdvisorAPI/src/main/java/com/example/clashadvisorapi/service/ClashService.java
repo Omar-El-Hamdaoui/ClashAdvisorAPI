@@ -11,11 +11,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.core.io.Resource;
+
+import java.nio.charset.StandardCharsets;
 
 
 import java.net.URI;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 
@@ -81,23 +83,23 @@ public class ClashService {
 
 
     }
-    public ByteArrayResource exportPlayerAsCsv(String tag) {
+
+    public Resource exportPlayerAsCsv(String tag) {
         PlayerDto player = getPlayerInfo(tag);
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("Nom,Niveau HDV,Niveau XP,Trophées,Clan\n");
-        sb.append(String.format(
-                "%s,%d,%d,%d,%s",
+        StringBuilder csvBuilder = new StringBuilder();
+        csvBuilder.append("Name,TownHallLevel,ExpLevel,Trophies,ClanName\n");
+        csvBuilder.append(String.format("%s,%d,%d,%d,%s",
                 player.getName(),
                 player.getTownHallLevel(),
                 player.getExpLevel(),
                 player.getTrophies(),
-                player.getClanName() != null ? player.getClanName() : ""
-        ));
+                player.getClanName() != null ? player.getClanName() : ""));
 
-        byte[] csvBytes = sb.toString().getBytes(StandardCharsets.UTF_8);
+        byte[] csvBytes = csvBuilder.toString().getBytes(StandardCharsets.UTF_8);
         return new ByteArrayResource(csvBytes);
     }
+
 
 }
 
