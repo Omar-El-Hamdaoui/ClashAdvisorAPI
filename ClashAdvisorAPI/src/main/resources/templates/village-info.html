@@ -12,6 +12,11 @@
     <li><strong>Niveau XP :</strong> <span th:text="${player.expLevel}"></span></li>
     <li><strong>Trophées :</strong> <span th:text="${player.trophies}"></span></li>
     <li><strong>Clan :</strong> <span th:text="${player.clanName} ?: 'Sans clan'"></span></li>
+    <p><strong>War Stars:</strong> <span th:text="${player.warStars}">0</span></p>
+    <p><strong>League:</strong> <span th:text="${player.leagueName}">-</span></p>
+    <img th:src="${player.leagueIconUrl}" alt="League Icon" width="50"/>
+    <p><strong>Clan Level:</strong> <span th:text="${player.clanLevel}">-</span></p>
+
 </ul>
 </body>
 </html>
