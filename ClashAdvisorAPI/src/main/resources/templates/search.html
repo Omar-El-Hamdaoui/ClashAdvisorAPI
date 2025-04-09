@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Rechercher un village</title>
+</head>
+<body>
+<h1>Recherche de Village Clash of Clans</h1>
+<form action="#" th:action="@{/village/search}" method="post">
+    <label for="tag">Tag du joueur :</label>
+    <input type="text" id="tag" name="tag" placeholder="#ABCD1234" required>
+    <button type="submit">Rechercher</button>
+</form>
+</body>
+</html>
