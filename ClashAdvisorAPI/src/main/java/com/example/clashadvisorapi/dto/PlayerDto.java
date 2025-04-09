@@ -9,4 +9,8 @@ public class PlayerDto {
     private int expLevel;
     private int trophies;
     private String clanName;
+    private int warStars;
+    private String leagueName;
+    private String leagueIconUrl;
+    private int clanLevel;
 }
