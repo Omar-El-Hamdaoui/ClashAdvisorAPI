@@ -53,6 +53,18 @@ public class ViewController {
         return "redirect:/village/view/" + encodedTag;
     }
 
+    @GetMapping("/search")
+    public String searchPlayer(@RequestParam("tag") String tag, Model model) {
+        try {
+            PlayerDto player = clashService.getPlayerInfo(tag);
+            model.addAttribute("player", player);
+        } catch (Exception e) {
+            model.addAttribute("error", "Joueur introuvable ou erreur d'API.");
+        }
+        return "index"; // Revenir sur la page de recherche avec les données
+    }
+
+
 
 
 }
