@@ -21,6 +21,12 @@ public class ViewController {
     @Autowired
     private ClashService clashService;
 
+    @GetMapping("/")
+    public String showHomePage() {
+        return "index"; // index.html doit être dans templates/
+    }
+
+
     @GetMapping("/view/{tag}")
     public String showVillageHtml(@PathVariable String tag, Model model) {
         PlayerDto player = clashService.getPlayerInfo(tag);
@@ -52,18 +58,6 @@ public class ViewController {
         String encodedTag = URLEncoder.encode(tag, StandardCharsets.UTF_8);
         return "redirect:/village/view/" + encodedTag;
     }
-
-    @GetMapping("/search")
-    public String searchPlayer(@RequestParam("tag") String tag, Model model) {
-        try {
-            PlayerDto player = clashService.getPlayerInfo(tag);
-            model.addAttribute("player", player);
-        } catch (Exception e) {
-            model.addAttribute("error", "Joueur introuvable ou erreur d'API.");
-        }
-        return "index"; // Revenir sur la page de recherche avec les données
-    }
-
 
 
 

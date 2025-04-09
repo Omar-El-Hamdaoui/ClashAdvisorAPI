@@ -1,24 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Recherche Village</title>
+    <meta charset="UTF-8"/>
+    <title>Recherche Joueur</title>
 </head>
 <body>
-<h1>Recherche de village Clash of Clans</h1>
-
-<form action="/village/search" method="get">
-    <label for="tag">Entrez le tag du joueur :</label>
-    <input type="text" name="tag" id="tag" placeholder="#ABC123" required>
+<h1>Rechercher un joueur</h1>
+<form action="/village/search" method="post">
+    <input type="text" name="tag" placeholder="Entrez le tag du joueur (#9RGLCULUG)" required/>
     <button type="submit">Rechercher</button>
 </form>
-
-<div th:if="${player}">
-    <h2>Résultat :</h2>
-    <p><strong>Nom :</strong> <span th:text="${player.name}"></span></p>
-    <p><strong>HDV :</strong> <span th:text="${player.townHallLevel}"></span></p>
-    <p><strong>XP :</strong> <span th:text="${player.expLevel}"></span></p>
-    <p><strong>Trophées :</strong> <span th:text="${player.trophies}"></span></p>
-    <p><strong>Clan :</strong> <span th:text="${player.clanName}"></span></p>
-</div>
 </body>
 </html>
