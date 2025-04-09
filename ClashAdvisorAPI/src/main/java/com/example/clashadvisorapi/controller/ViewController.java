@@ -10,6 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 
 @Controller
 @RequestMapping("/village")
@@ -35,6 +38,21 @@ public class ViewController {
                 .contentType(MediaType.parseMediaType("text/csv"))
                 .body(csvResource);
     }
+
+    @GetMapping("/search")
+    public String showSearchPage() {
+        return "search";
+    }
+
+    @PostMapping("/search")
+    public String redirectToVillage(@RequestParam String tag) {
+        if (!tag.startsWith("#")) {
+            tag = "#" + tag;
+        }
+        String encodedTag = URLEncoder.encode(tag, StandardCharsets.UTF_8);
+        return "redirect:/village/view/" + encodedTag;
+    }
+
 
 
 }
